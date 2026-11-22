@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap";
 import TrueFocus from "@/components/TrueFocus";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { COURSES } from "@/lib/courses";
 import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, SITE_URL, WHATSAPP } from "@/lib/site";
 import { CTA, GLASS } from "@/lib/styles";
 import { cn } from "@/lib/utils";
@@ -14,26 +15,8 @@ import logo from "./logo.jpeg";
 const MAPS_QUERY = "Rise+Academy+New+Palam+Vihar+Gurugram";
 const ADDRESS = "A-117, Bajghera Rd, New Palam Vihar, Block B, Chowk, Sector 110, Gurugram, Haryana 122017";
 
-const courses = [
-  {
-    icon: BookOpen,
-    title: "School Tuition",
-    text: "Classes 1st–12th in three wings: Junior (1–5), Middle (6–8) and Senior (9–12).",
-    items: ["Mathematics", "Science", "English", "Social Science", "Accountancy", "Economics", "Business Studies"],
-  },
-  {
-    icon: MessageCircle,
-    title: "Spoken English & Personal Growth",
-    text: "Speak fluently, present yourself with confidence, and prepare for interviews and English tests.",
-    items: ["Spoken English", "Personality Development", "Interview Preparation", "IELTS", "PTE"],
-  },
-  {
-    icon: Monitor,
-    title: "Computer & Digital Skills",
-    text: "Practical computer skills for school, college and work.",
-    items: ["Computer Courses", "MS Office", "Advanced Excel", "Tally", "Digital Marketing", "Website Designing"],
-  },
-];
+const icons = { "School Tuition": BookOpen, "Spoken English & Personal Growth": MessageCircle, "Computer & Digital Skills": Monitor };
+const courses = COURSES.map((course) => ({ ...course, icon: icons[course.title] }));
 
 const reasons = [
   ["Personal attention", "Teachers make sure no student is left behind."],
