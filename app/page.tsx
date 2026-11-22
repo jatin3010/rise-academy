@@ -1,8 +1,9 @@
 import { BookOpen, ChevronDown, MessageCircle, Monitor, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import CardSwap, { Card as SwapCard } from "@/components/CardSwap";
 import TrueFocus from "@/components/TrueFocus";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, SITE_URL, WHATSAPP } from "@/lib/site";
 import { CTA, GLASS } from "@/lib/styles";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,7 @@ const reasons = [
   ["Supportive environment", "A friendly place where students feel free to ask questions."],
 ];
 
+// Real Google reviews only. To show more, paste them here word for word with the reviewer's name as shown on Google.
 const reviews = [
   {
     name: "Shashwat Savarn",
@@ -148,7 +150,7 @@ export default function Home() {
       <main id="top">
         <Hero />
 
-        <section id="courses" className="py-20">
+        <section id="courses" className="py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="The best coaching in Gurugram" title="Our courses" />
             <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">{about}</p>
@@ -175,7 +177,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="why" className="py-20">
+        <section id="why" className="py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Why students choose us" title="Why Rise Academy" />
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -189,37 +191,51 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="reviews" className="py-20">
-          <div className="mx-auto max-w-5xl px-4">
-            <SectionTitle
-              eyebrow={`${RATING} ★ from ${REVIEW_COUNT.toLocaleString("en-IN")} Google reviews`}
-              title="What our students say"
-            />
-            <div className="grid gap-5 md:grid-cols-3">
-              {reviews.map(({ name, text }) => (
-                <Card key={name} className={`pt-6 ${glassCard}`}>
-                  <CardContent className="flex flex-col gap-4">
-                    <Stars />
-                    <blockquote className="text-base text-muted-foreground">“{text}”</blockquote>
-                  </CardContent>
-                  <CardFooter className="mt-auto font-semibold">{name}</CardFooter>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-8 text-center">
+        <section id="reviews" className="py-14 sm:py-20">
+          <div className="mx-auto grid max-w-5xl items-center gap-10 px-4 md:grid-cols-2">
+            <div>
+              <SectionTitle
+                eyebrow={`${RATING} ★ from ${REVIEW_COUNT.toLocaleString("en-IN")} Google reviews`}
+                title="What our students say"
+              />
+              <p className="mb-8 max-w-md leading-relaxed text-muted-foreground">
+                Real reviews from Rise Academy students on Google. Swipe the top card, tap one behind it, or use the
+                arrow keys.
+              </p>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`}
                 target="_blank"
                 rel="noopener"
                 className={glassButton}
               >
-                Read all reviews on Google
+                Read all {REVIEW_COUNT.toLocaleString("en-IN")} reviews on Google
               </a>
+            </div>
+            {/* Narrow, tall cards with small offsets: the stack scales down to fit its column, so this keeps the
+                review text readable on phones. The negative margin lets it use the full phone width. */}
+            <div className="-mx-4 sm:mx-0">
+            <CardSwap label="Student reviews" width={280} height={360} cardDistance={14} verticalDistance={22} depth={60} visibleCards={3} delay={5000}>
+              {reviews.map(({ name, text }) => (
+                <SwapCard key={name} className="flex flex-col gap-3 p-5">
+                  <Stars />
+                  <blockquote className="line-clamp-9 text-[15px] leading-relaxed text-white/80">“{text}”</blockquote>
+                  <div className="mt-auto flex items-center gap-3">
+                    <span className="grid size-9 place-items-center rounded-full bg-white/10 text-sm font-semibold" aria-hidden>
+                      {name[0]}
+                    </span>
+                    <div>
+                      <div className="text-sm font-semibold">{name}</div>
+                      <div className="text-xs text-white/60">Google review</div>
+                    </div>
+                  </div>
+                </SwapCard>
+              ))}
+            </CardSwap>
             </div>
           </div>
         </section>
 
-        <section id="faq" className="py-20">
+        <section id="faq" className="py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Asked by parents and students" title="Common questions" />
             <div className="grid max-w-3xl gap-3">
@@ -236,7 +252,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="contact" className="py-20">
+        <section id="contact" className="py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Visit or call us" title="Contact" />
             <div className="grid items-start gap-5 md:grid-cols-2">

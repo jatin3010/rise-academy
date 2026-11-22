@@ -44,7 +44,8 @@ export default function Hero() {
           </a>
 
           <div className="hidden gap-3 md:flex">
-            <div className="flex gap-1 rounded-full bg-white/10 px-1.5 py-1.5 backdrop-blur-lg">
+            {/* Darker glass than the spec's white/10: on tablets the links sit over the bright mist and vanished. */}
+            <div className="flex gap-1 rounded-full bg-black/20 px-1.5 py-1.5 backdrop-blur-lg">
               {LINKS.map(([label, href]) => (
                 <a
                   key={label}

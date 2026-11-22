@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Silkscreen } from "next/font/google";
 import "./globals.css";
+import SmoothScroll from "@/components/SmoothScroll";
 import { PHONE_DISPLAY, RATING, SITE_URL } from "@/lib/site";
 import logo from "./logo.jpeg";
 
@@ -30,8 +31,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-IN" className={`${geist.variable} ${silkscreen.variable} h-full scroll-smooth antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en-IN" className={`${geist.variable} ${silkscreen.variable} h-full motion-safe:scroll-smooth antialiased`}>
+      <body className="min-h-full flex flex-col">
+        <SmoothScroll />
+        {children}
+      </body>
     </html>
   );
 }
