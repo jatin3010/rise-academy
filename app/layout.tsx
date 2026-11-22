@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, Noto_Sans_Devanagari } from "next/font/google";
+import { Geist, Noto_Sans_Devanagari, Silkscreen } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-sans", subsets: ["latin"] });
-const fraunces = Fraunces({ variable: "--font-heading", subsets: ["latin"] });
+const geist = Geist({ variable: "--font-sans", subsets: ["latin"] });
+const silkscreen = Silkscreen({ variable: "--font-silkscreen", subsets: ["latin"], weight: ["400", "700"] });
 const hindi = Noto_Sans_Devanagari({
   variable: "--font-hindi",
   subsets: ["devanagari"],
@@ -20,7 +20,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${fraunces.variable} ${hindi.variable} h-full scroll-smooth antialiased`}
+      className={`${geist.variable} ${silkscreen.variable} ${hindi.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

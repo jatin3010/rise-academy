@@ -1,12 +1,10 @@
 import { GraduationCap, MessageCircle, Sparkles, Star } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { PHONE, PHONE_DISPLAY, WHATSAPP } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import Hero from "./hero";
 
-const PHONE = "+917042481547";
-const PHONE_DISPLAY = "070424 81547";
-const WHATSAPP = "https://wa.me/917042481547";
 const MAPS_QUERY = "Rise+Academy+New+Palam+Vihar+Gurugram";
 const ADDRESS = "A-117, Bajghera Rd, New Palam Vihar, Block B, Chowk, Sector 110, Gurugram, Haryana 122017";
 
@@ -95,42 +93,8 @@ export default function Home() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-3">
-          <a href="#top" className="font-heading text-2xl font-extrabold">
-            Rise<span className="text-amber-600">.</span>Academy
-          </a>
-          <nav aria-label="Main" className="flex flex-wrap gap-5 text-sm font-medium">
-            {["Courses", "Why Rise", "Reviews", "Contact"].map((label) => (
-              <a key={label} href={`#${label.split(" ")[0].toLowerCase()}`} className="hover:text-amber-700">
-                {label}
-              </a>
-            ))}
-          </nav>
-        </div>
-      </header>
-
       <main id="top">
-        <section className="relative overflow-hidden bg-foreground py-24 text-white">
-          <div aria-hidden className="absolute -top-32 -right-32 size-[420px] rounded-full bg-[radial-gradient(circle,var(--primary)_0%,transparent_70%)] opacity-35" />
-          <div className="relative mx-auto max-w-5xl px-4">
-            <p lang="hi" className="font-hindi text-lg text-primary">राइज़ एकेडमी</p>
-            <h1 className="mt-3 mb-5 max-w-[14ch] font-heading text-5xl font-extrabold leading-tight md:text-7xl">
-              Speak English with <span className="text-primary">confidence.</span>
-            </h1>
-            <p className="max-w-[52ch] text-lg text-white/80">
-              Spoken English, IELTS coaching and personality development in New Palam Vihar, Gurugram. Small batches,
-              patient mentors, and real progress you can hear.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a href={`tel:${PHONE}`} className={cn(buttonVariants(), big)}>Call {PHONE_DISPLAY}</a>
-              <a href={WHATSAPP} target="_blank" rel="noopener" className={ghostOnDark}>Chat on WhatsApp</a>
-            </div>
-            <Badge variant="secondary" className="mt-10 h-auto gap-2 rounded-xl bg-white/10 px-4 py-2 text-sm text-white">
-              <Stars /> <strong>4.9</strong> on Google · 1,001 reviews
-            </Badge>
-          </div>
-        </section>
+        <Hero />
 
         <section id="courses" className="py-20">
           <div className="mx-auto max-w-5xl px-4">
@@ -234,18 +198,6 @@ export default function Home() {
       </main>
 
       <footer className="py-6 text-center text-sm text-muted-foreground">© Rise Academy · राइज़ एकेडमी · Gurugram</footer>
-
-      <a
-        href={WHATSAPP}
-        target="_blank"
-        rel="noopener"
-        aria-label="Chat with Rise Academy on WhatsApp"
-        className="fixed right-4 bottom-4 z-20 grid size-14 place-items-center rounded-full bg-[#25d366] text-white shadow-lg"
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z" />
-        </svg>
-      </a>
     </>
   );
 }
