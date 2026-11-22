@@ -1,4 +1,5 @@
-import { BookOpen, ChevronDown, MessageCircle, Monitor, Star } from "lucide-react";
+import Image from "next/image";
+import { BookOpen, CheckCheck, MessageCircle, Monitor, SendHorizontal, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap";
@@ -238,16 +239,44 @@ export default function Home() {
         <section id="faq" className="py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Asked by parents and students" title="Common questions" />
-            <div className="grid max-w-3xl gap-3">
-              {faqs.map(([question, answer]) => (
-                <details key={question} className={`group ${GLASS}`}>
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
-                    {question}
-                    <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden />
-                  </summary>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{answer}</p>
-                </details>
-              ))}
+            {/* FAQ as a chat thread: the visitor's question on the right, the academy's reply on the left.
+                Every answer stays visible page text for search and AI answers. */}
+            <div className="max-w-2xl overflow-hidden rounded-2xl bg-[#0b141a]/85 ring-1 ring-white/10 backdrop-blur-lg">
+              <div className="flex items-center gap-3 bg-[#202c33] px-4 py-3">
+                <Image src={logo} alt="" width={40} height={40} unoptimized className="size-10 rounded-full object-cover" />
+                <div>
+                  <div className="font-semibold">Rise Academy</div>
+                  <div className="text-xs text-white/60">Questions parents and students ask us</div>
+                </div>
+              </div>
+
+              <dl className="flex flex-col gap-2 px-3 py-5 sm:px-5">
+                {faqs.map(([question, answer]) => (
+                  <div key={question} className="flex flex-col gap-2">
+                    <dt className="ml-auto max-w-[85%] rounded-lg rounded-tr-none bg-[#005c4b] px-3 py-2 text-sm text-white">
+                      {question}
+                      <CheckCheck className="float-right mt-0.5 ml-2 size-4 text-[#53bdeb]" aria-hidden />
+                    </dt>
+                    <dd className="mr-auto mb-2 max-w-[85%] rounded-lg rounded-tl-none bg-[#202c33] px-3 py-2 text-sm leading-relaxed text-white/90">
+                      {answer}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+
+              <a
+                href={WHATSAPP}
+                target="_blank"
+                rel="noopener"
+                className="flex items-center gap-2 bg-[#202c33] px-3 py-2.5 transition-colors hover:bg-[#2a3942]"
+              >
+                <span className="flex-1 rounded-full bg-[#2a3942] px-4 py-2.5 text-sm text-white/60">
+                  Ask your own question on WhatsApp…
+                </span>
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#00a884] text-[#0b141a]" aria-hidden>
+                  <SendHorizontal className="size-5" />
+                </span>
+              </a>
             </div>
           </div>
         </section>
