@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
-import { WHATSAPP } from "@/lib/site";
+import { RATING, REVIEW_COUNT, WHATSAPP } from "@/lib/site";
+import logo from "./logo.jpeg";
 
-const VIDEO =
-  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260803_192301_9231ed6b-c55c-4a48-909c-4ebe11cf2e11.mp4";
 const LINKS = [
   ["Courses", "#courses"],
   ["Why Rise", "#why"],
@@ -26,23 +26,21 @@ function requestCallback(e: FormEvent<HTMLFormElement>) {
 export default function Hero() {
   const [open, setOpen] = useState(false);
 
+  // Lock page scroll only below md, so it can't stay stuck if the screen widens while the menu is open.
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    document.body.classList.toggle("max-md:overflow-hidden", open);
+    return () => document.body.classList.remove("max-md:overflow-hidden");
   }, [open]);
 
   return (
-    <section className="relative h-screen w-full overflow-hidden">
-      <video src={VIDEO} autoPlay loop muted playsInline aria-hidden className="absolute inset-0 h-full w-full object-cover" />
+    <section className="relative flex min-h-svh w-full flex-col overflow-hidden">
+      {/* shortcut: relative paths resolve under the GitHub Pages base path only on the home page; use the base path if Hero moves to a nested route. */}
+      <video src="hero.mp4" poster="hero.jpg" autoPlay loop muted playsInline aria-hidden className="absolute inset-0 h-full w-full object-cover" />
 
-      <div className="relative z-10 flex h-full flex-col">
+      <div className="relative z-10 flex flex-1 flex-col">
         <nav className="flex items-center justify-between px-5 py-5 sm:px-8 sm:py-6 lg:px-12">
           <a href="#top" className="flex items-center gap-2">
-            <svg width="24" height="24" viewBox="0 0 256 256" className="fill-[#010101] lg:fill-white" aria-hidden>
-              <path d="M 128 128 C 128 198.692 70.692 256 0 256 C 0 185.308 57.308 128 128 128 Z M 128 128 C 198.692 128 256 185.308 256 256 C 185.308 256 128 198.692 128 128 Z M 0 0 C 70.692 0 128 57.308 128 128 C 57.308 128 0 70.692 0 0 Z M 256 0 C 256 70.692 198.692 128 128 128 C 128 57.308 185.308 0 256 0 Z" />
-            </svg>
+            <Image src={logo} alt="" width={36} height={36} unoptimized priority className="h-9 w-9 rounded-full object-cover" />
             <span className="text-lg font-semibold text-[#010101] lg:text-white">Rise Academy</span>
           </a>
 
@@ -123,7 +121,7 @@ export default function Hero() {
         <div className="mt-auto flex flex-col gap-6 px-5 pb-8 sm:gap-8 sm:px-8 sm:pb-12 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:pb-16">
           <div className="max-w-xl">
             <h1 className="text-3xl font-semibold leading-[1.1] tracking-tight text-[#010101] sm:text-4xl lg:text-[3.5rem] lg:text-white">
-              Speak English with confidence, not hesitation
+              Strong foundations today. Successful futures tomorrow.
             </h1>
             <form
               onSubmit={requestCallback}
@@ -152,10 +150,10 @@ export default function Hero() {
                 style={{ fontFamily: "var(--font-silkscreen), cursive" }}
                 className="text-3xl font-normal tracking-tight text-[#010101] sm:text-4xl lg:text-white"
               >
-                1,001+
+                {REVIEW_COUNT.toLocaleString("en-IN")}+
               </p>
               <p className="mt-3 text-sm leading-relaxed text-[#010101]/70 sm:mt-4 lg:text-white/70">
-                Google reviews from our students, rated 4.9 on average.
+                Google reviews from our students, rated {RATING} on average.
               </p>
             </div>
 

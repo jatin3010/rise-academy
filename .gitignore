@@ -22,6 +22,8 @@
 
 # misc
 .DS_Store
+# original artwork (logos, banners); the site uses the resized copies in app/ and public/
+/*.jpeg
 *.pem
 
 # debug

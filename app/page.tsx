@@ -1,7 +1,8 @@
-import { GraduationCap, MessageCircle, Sparkles, Star } from "lucide-react";
+import { BookOpen, MessageCircle, Monitor, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PHONE, PHONE_DISPLAY, WHATSAPP } from "@/lib/site";
+import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, WHATSAPP } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import Hero from "./hero";
 
@@ -10,27 +11,31 @@ const ADDRESS = "A-117, Bajghera Rd, New Palam Vihar, Block B, Chowk, Sector 110
 
 const courses = [
   {
+    icon: BookOpen,
+    title: "School Tuition",
+    text: "Classes 1st–12th in three wings: Junior (1–5), Middle (6–8) and Senior (9–12).",
+    items: ["Mathematics", "Science", "English", "Social Science", "Accountancy", "Economics", "Business Studies"],
+  },
+  {
     icon: MessageCircle,
-    title: "Spoken English",
-    text: "Build fluency and confidence for everyday conversation, interviews and the workplace, from beginner to advanced.",
+    title: "Spoken English & Personal Growth",
+    text: "Speak fluently, present yourself with confidence, and prepare for interviews and English tests.",
+    items: ["Spoken English", "Personality Development", "Interview Preparation", "IELTS", "PTE"],
   },
   {
-    icon: GraduationCap,
-    title: "IELTS Coaching",
-    text: "Focused preparation for Listening, Reading, Writing and Speaking, with practice tests and feedback for your target band.",
-  },
-  {
-    icon: Sparkles,
-    title: "Personality Development",
-    text: "Communication, body language and public speaking skills that help you present yourself with confidence.",
+    icon: Monitor,
+    title: "Computer & Digital Skills",
+    text: "Practical computer skills for school, college and work.",
+    items: ["Computer Courses", "MS Office", "Advanced Excel", "Tally", "Digital Marketing", "Website Designing"],
   },
 ];
 
 const reasons = [
-  ["Dedicated faculty", "Approachable teachers who make sure no student is left behind."],
-  ["Strong fundamentals", "Grammar and core concepts first, so fluency lasts."],
-  ["Doubt-clearing sessions", "Time set aside to answer every question."],
-  ["Easy to reach", "Main-road location at Sector 110, New Palam Vihar."],
+  ["Personal attention", "Teachers make sure no student is left behind."],
+  ["Concept-based learning", "Understanding first, not rote memorisation."],
+  ["Regular tests & assessments", "Frequent tests show what is learnt and what needs work."],
+  ["Individual progress tracking", "Each student's progress is followed closely."],
+  ["Supportive environment", "A friendly place where students feel free to ask questions."],
 ];
 
 const reviews = [
@@ -53,7 +58,7 @@ const jsonLd = {
   "@type": "EducationalOrganization",
   name: "Rise Academy",
   alternateName: "राइज़ एकेडमी",
-  telephone: "+91-7042481547",
+  telephone: PHONE,
   url: "https://rise-academy.grexa.site",
   address: {
     "@type": "PostalAddress",
@@ -63,7 +68,7 @@ const jsonLd = {
     postalCode: "122017",
     addressCountry: "IN",
   },
-  aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "1001" },
+  aggregateRating: { "@type": "AggregateRating", ratingValue: RATING, reviewCount: REVIEW_COUNT },
 };
 
 const big = "h-11 rounded-full px-6 text-base font-semibold";
@@ -98,15 +103,24 @@ export default function Home() {
 
         <section id="courses" className="py-20">
           <div className="mx-auto max-w-5xl px-4">
-            <SectionTitle eyebrow="What we teach" title="Courses" />
+            <SectionTitle eyebrow="The best coaching in Gurugram" title="Our courses" />
             <div className="grid gap-5 md:grid-cols-3">
-              {courses.map(({ icon: Icon, title, text }) => (
+              {courses.map(({ icon: Icon, title, text, items }) => (
                 <Card key={title} className="p-2">
                   <CardHeader>
                     <Icon className="size-8 text-amber-600" aria-hidden />
                     <CardTitle className="mt-3 text-xl font-bold">{title}</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-base text-muted-foreground">{text}</CardContent>
+                  <CardContent className="text-base text-muted-foreground">
+                    <p>{text}</p>
+                    <ul className="mt-4 flex flex-wrap gap-2">
+                      {items.map((item) => (
+                        <li key={item}>
+                          <Badge variant="secondary">{item}</Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
                 </Card>
               ))}
             </div>
@@ -116,7 +130,7 @@ export default function Home() {
         <section id="why" className="border-y bg-card py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Why students choose us" title="Why Rise Academy" />
-            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
               {reasons.map(([title, text]) => (
                 <li key={title} className="border-l-4 border-primary pl-4">
                   <strong className="block font-heading text-lg">{title}</strong>
@@ -129,7 +143,10 @@ export default function Home() {
 
         <section id="reviews" className="py-20">
           <div className="mx-auto max-w-5xl px-4">
-            <SectionTitle eyebrow="4.9 ★ from 1,001 Google reviews" title="What our students say" />
+            <SectionTitle
+              eyebrow={`${RATING} ★ from ${REVIEW_COUNT.toLocaleString("en-IN")} Google reviews`}
+              title="What our students say"
+            />
             <div className="grid gap-5 md:grid-cols-3">
               {reviews.map(({ name, text }) => (
                 <Card key={name} className="pt-6">
