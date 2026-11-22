@@ -1,10 +1,13 @@
-import { BookOpen, MessageCircle, Monitor, Star } from "lucide-react";
+import { BookOpen, ChevronDown, MessageCircle, Monitor, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import TrueFocus from "@/components/TrueFocus";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, WHATSAPP } from "@/lib/site";
+import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, SITE_URL, WHATSAPP } from "@/lib/site";
+import { CTA, GLASS } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 import Hero from "./hero";
+import logo from "./logo.jpeg";
 
 const MAPS_QUERY = "Rise+Academy+New+Palam+Vihar+Gurugram";
 const ADDRESS = "A-117, Bajghera Rd, New Palam Vihar, Block B, Chowk, Sector 110, Gurugram, Haryana 122017";
@@ -53,13 +56,44 @@ const reviews = [
   },
 ];
 
+// Plain facts in one paragraph, so search engines and AI answers can quote who, what and where.
+const about = `Rise Academy (राइज़ एकेडमी) is a coaching centre at A-117, Bajghera Road, New Palam Vihar, Sector 110, Gurugram. It offers school tuition for Classes 1 to 12, spoken English, personality development, interview preparation, IELTS and PTE coaching, and computer courses including MS Office, Advanced Excel, Tally, digital marketing and website designing. Students rate it ${RATING} out of 5 on Google across ${REVIEW_COUNT.toLocaleString("en-IN")} reviews.`;
+
+// Only facts from the Google listing and the academy's banners; no fees or batch times, which we don't know.
+const faqs = [
+  ["What courses does Rise Academy offer?", courses.map(({ title, items }) => `${title}: ${items.join(", ")}`).join(". ") + "."],
+  ["Which school classes do you teach?", "All classes from 1st to 12th, in three wings: Junior (Classes 1–5), Middle (Classes 6–8) and Senior (Classes 9–12)."],
+  ["Where is Rise Academy in Gurugram?", `${ADDRESS}. Google Maps plus code: G25G+V9 Gurugram.`],
+  ["What are the timings?", `The academy is open until 10 PM. Call ${PHONE_DISPLAY} to ask about batch timings.`],
+  ["Do you coach for IELTS and PTE?", "Yes. IELTS and PTE preparation is part of the Spoken English & Personal Growth programme."],
+  ["How do I join?", `Call ${PHONE_DISPLAY} or send a WhatsApp message to the same number.`],
+];
+
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "EducationalOrganization",
+  "@type": ["LocalBusiness", "EducationalOrganization"],
+  "@id": `${SITE_URL}#business`,
   name: "Rise Academy",
   alternateName: "राइज़ एकेडमी",
+  description: about,
+  url: SITE_URL,
   telephone: PHONE,
-  url: "https://rise-academy.grexa.site",
+  image: new URL("og.jpg", SITE_URL).href,
+  logo: new URL(logo.src, SITE_URL).href,
+  sameAs: ["https://rise-academy.grexa.site"],
+  hasMap: `https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`,
+  // Decoded from the plus code 7JWVG25G+V9 (G25G+V9 Gurugram).
+  geo: { "@type": "GeoCoordinates", latitude: 28.50969, longitude: 77.02594 },
+  areaServed: { "@type": "City", name: "Gurugram" },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Courses",
+    itemListElement: courses.map(({ title, items }) => ({
+      "@type": "OfferCatalog",
+      name: title,
+      itemListElement: items.map((name) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name } })),
+    })),
+  },
   address: {
     "@type": "PostalAddress",
     streetAddress: "A-117, Bajghera Rd, New Palam Vihar, Block B, Chowk, Sector 110",
@@ -71,8 +105,13 @@ const jsonLd = {
   aggregateRating: { "@type": "AggregateRating", ratingValue: RATING, reviewCount: REVIEW_COUNT },
 };
 
-const big = "h-11 rounded-full px-6 text-base font-semibold";
-const ghostOnDark = cn(buttonVariants({ variant: "outline" }), big, "border-white/60 bg-transparent text-white hover:bg-white/10 hover:text-white");
+// Shared TrueFocus settings for section headings: white brackets like the hero, light blur so headings stay readable.
+const focus = { borderColor: "var(--primary)", blurAmount: 2, cornerSize: 12 };
+
+const big = "h-11 rounded-full px-6 text-sm font-medium";
+const ctaButton = cn(buttonVariants(), big, "text-white", CTA);
+const glassButton = cn(buttonVariants({ variant: "ghost" }), big, "bg-white/10 backdrop-blur-lg hover:bg-white/20");
+const glassCard = "rounded-2xl backdrop-blur-lg";
 
 function Stars({ className }: { className?: string }) {
   return (
@@ -87,8 +126,10 @@ function Stars({ className }: { className?: string }) {
 function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <>
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">{eyebrow}</p>
-      <h2 className="mt-2 mb-8 font-heading text-3xl font-bold md:text-4xl">{title}</h2>
+      <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{eyebrow}</p>
+      <h2 className="mt-3 mb-8 text-3xl font-semibold leading-[1.1] tracking-tight sm:text-4xl">
+        <TrueFocus sentence={title} {...focus} />
+      </h2>
     </>
   );
 }
@@ -97,6 +138,12 @@ export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {/* Dimmed hero frame fixed behind the sections, so the glass panels have something to blur. Relative URL: same shortcut as the hero video. */}
+      <div
+        aria-hidden
+        className="fixed inset-0 -z-10 bg-cover bg-center"
+        style={{ backgroundImage: "linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.7)), url(hero.jpg)" }}
+      />
 
       <main id="top">
         <Hero />
@@ -104,12 +151,13 @@ export default function Home() {
         <section id="courses" className="py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="The best coaching in Gurugram" title="Our courses" />
+            <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">{about}</p>
             <div className="grid gap-5 md:grid-cols-3">
               {courses.map(({ icon: Icon, title, text, items }) => (
-                <Card key={title} className="p-2">
+                <Card key={title} className={`p-2 ${glassCard}`}>
                   <CardHeader>
-                    <Icon className="size-8 text-amber-600" aria-hidden />
-                    <CardTitle className="mt-3 text-xl font-bold">{title}</CardTitle>
+                    <Icon className="size-8 text-white/80" aria-hidden />
+                    <CardTitle className="mt-3 text-xl font-semibold tracking-tight">{title}</CardTitle>
                   </CardHeader>
                   <CardContent className="text-base text-muted-foreground">
                     <p>{text}</p>
@@ -127,14 +175,14 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="why" className="border-y bg-card py-20">
+        <section id="why" className="py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Why students choose us" title="Why Rise Academy" />
-            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {reasons.map(([title, text]) => (
-                <li key={title} className="border-l-4 border-primary pl-4">
-                  <strong className="block font-heading text-lg">{title}</strong>
-                  <span className="text-muted-foreground">{text}</span>
+                <li key={title} className={GLASS}>
+                  <strong className="block font-semibold">{title}</strong>
+                  <span className="mt-2 block text-sm leading-relaxed text-muted-foreground">{text}</span>
                 </li>
               ))}
             </ul>
@@ -149,7 +197,7 @@ export default function Home() {
             />
             <div className="grid gap-5 md:grid-cols-3">
               {reviews.map(({ name, text }) => (
-                <Card key={name} className="pt-6">
+                <Card key={name} className={`pt-6 ${glassCard}`}>
                   <CardContent className="flex flex-col gap-4">
                     <Stars />
                     <blockquote className="text-base text-muted-foreground">“{text}”</blockquote>
@@ -163,7 +211,7 @@ export default function Home() {
                 href={`https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`}
                 target="_blank"
                 rel="noopener"
-                className={cn(buttonVariants({ variant: "outline" }), big, "border-foreground bg-transparent")}
+                className={glassButton}
               >
                 Read all reviews on Google
               </a>
@@ -171,50 +219,68 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="contact" className="bg-foreground py-20 text-white">
+        <section id="faq" className="py-20">
           <div className="mx-auto max-w-5xl px-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Visit or call us</p>
-            <h2 className="mt-2 mb-8 font-heading text-3xl font-bold md:text-4xl">Contact</h2>
-            <div className="grid items-start gap-8 md:grid-cols-2">
-              <div>
+            <SectionTitle eyebrow="Asked by parents and students" title="Common questions" />
+            <div className="grid max-w-3xl gap-3">
+              {faqs.map(([question, answer]) => (
+                <details key={question} className={`group ${GLASS}`}>
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
+                    {question}
+                    <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden />
+                  </summary>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="contact" className="py-20">
+          <div className="mx-auto max-w-5xl px-4">
+            <SectionTitle eyebrow="Visit or call us" title="Contact" />
+            <div className="grid items-start gap-5 md:grid-cols-2">
+              <div className={GLASS}>
                 <dl className="grid gap-5">
                   {[
                     ["Address", ADDRESS],
                     ["Phone", <a key="p" href={`tel:${PHONE}`}>{PHONE_DISPLAY}</a>],
-                    ["Hours", "Open daily · Closes 10 PM"],
+                    ["Hours", "Closes 10 PM · call for batch timings"],
                     ["Plus code", "G25G+V9 Gurugram"],
                   ].map(([label, value]) => (
                     <div key={label as string}>
-                      <dt className="text-xs uppercase tracking-widest text-primary">{label}</dt>
+                      <dt className="text-xs uppercase tracking-widest text-muted-foreground">{label}</dt>
                       <dd className="text-lg">{value}</dd>
                     </div>
                   ))}
                 </dl>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <a href={WHATSAPP} target="_blank" rel="noopener" className={cn(buttonVariants(), big)}>WhatsApp us</a>
+                  <a href={WHATSAPP} target="_blank" rel="noopener" className={ctaButton}>WhatsApp us</a>
                   <a
                     href={`https://www.google.com/maps/dir/?api=1&destination=${MAPS_QUERY}`}
                     target="_blank"
                     rel="noopener"
-                    className={ghostOnDark}
+                    className={glassButton}
                   >
                     Get directions
                   </a>
                 </div>
               </div>
-              <iframe
-                title="Map showing Rise Academy, New Palam Vihar, Gurugram"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                src="https://www.google.com/maps?q=Rise+Academy,+A-117+Bajghera+Rd,+New+Palam+Vihar,+Sector+110,+Gurugram&output=embed"
-                className="h-[340px] w-full rounded-2xl border-0"
-              />
+              <div className="rounded-2xl bg-white/10 p-1.5 backdrop-blur-lg">
+                <iframe
+                  title="Map showing Rise Academy, New Palam Vihar, Gurugram"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src="https://www.google.com/maps?q=Rise+Academy,+A-117+Bajghera+Rd,+New+Palam+Vihar,+Sector+110,+Gurugram&ll=28.50969,77.02594&z=16&output=embed"
+                  className="block h-[340px] w-full rounded-xl border-0"
+                />
+              </div>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="py-6 text-center text-sm text-muted-foreground">© Rise Academy · राइज़ एकेडमी · Gurugram</footer>
+      <footer className="border-t py-6 text-center text-sm text-muted-foreground">© Rise Academy · राइज़ एकेडमी · Gurugram</footer>
     </>
   );
 }

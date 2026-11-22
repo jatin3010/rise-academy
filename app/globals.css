@@ -47,26 +47,27 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Rise palette: navy ink, saffron primary, warm cream background */
+/* Hero look everywhere: near-black page, white text, white/10 glass surfaces */
 :root {
-  --background: oklch(0.98 0.01 85);
-  --foreground: oklch(0.25 0.06 265);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.06 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.06 265);
-  --primary: oklch(0.78 0.16 70);
-  --primary-foreground: oklch(0.25 0.06 265);
-  --secondary: oklch(0.95 0.02 85);
-  --secondary-foreground: oklch(0.25 0.06 265);
-  --muted: oklch(0.95 0.02 85);
-  --muted-foreground: oklch(0.42 0.05 265);
-  --accent: oklch(0.95 0.02 85);
-  --accent-foreground: oklch(0.25 0.06 265);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.91 0.02 85);
-  --input: oklch(0.91 0.02 85);
-  --ring: oklch(0.68 0.16 65);
+  color-scheme: dark;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(1 0 0 / 10%);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.145 0 0);
+  --secondary: oklch(1 0 0 / 10%);
+  --secondary-foreground: oklch(1 0 0 / 80%);
+  --muted: oklch(1 0 0 / 10%);
+  --muted-foreground: oklch(1 0 0 / 70%);
+  --accent: oklch(1 0 0 / 10%);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(1 0 0 / 40%);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -121,10 +122,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Page colour on html, not body, so the fixed backdrop in page.tsx (-z-10) paints above it. */
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply bg-background font-sans;
   }
 }

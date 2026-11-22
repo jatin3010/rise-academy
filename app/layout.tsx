@@ -1,21 +1,36 @@
 import type { Metadata } from "next";
 import { Geist, Silkscreen } from "next/font/google";
 import "./globals.css";
-import { RATING } from "@/lib/site";
+import { PHONE_DISPLAY, RATING, SITE_URL } from "@/lib/site";
 import logo from "./logo.jpeg";
 
 const geist = Geist({ variable: "--font-sans", subsets: ["latin"] });
 const silkscreen = Silkscreen({ variable: "--font-silkscreen", subsets: ["latin"], weight: "400" });
 
+const title = "Rise Academy Gurugram — Tuition, Spoken English, IELTS & Computer Classes";
+const description = `Rise Academy (राइज़ एकेडमी), Sector 110, New Palam Vihar, Gurugram: school tuition for Classes 1–12, spoken English, IELTS, PTE and computer courses. Rated ${RATING} on Google. Call ${PHONE_DISPLAY}.`;
+
 export const metadata: Metadata = {
-  title: "Rise Academy — School Tuition, Spoken English & Computer Courses, Gurugram",
-  description: `Rise Academy (राइज़ एकेडमी), Sector 110, Gurugram. School tuition for classes 1st–12th, spoken English, IELTS, PTE, personality development and computer courses. Rated ${RATING} on Google.`,
+  metadataBase: new URL(SITE_URL),
+  title,
+  description,
+  alternates: { canonical: "./" },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: "Rise Academy",
+    url: "./",
+    title,
+    description,
+    images: [{ url: "og.jpg", width: 1200, height: 630, alt: "Rise Academy courses banner with phone number and address" }],
+  },
+  twitter: { card: "summary_large_image" },
   icons: logo.src,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geist.variable} ${silkscreen.variable} h-full scroll-smooth antialiased`}>
+    <html lang="en-IN" className={`${geist.variable} ${silkscreen.variable} h-full scroll-smooth antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

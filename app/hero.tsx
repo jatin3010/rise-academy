@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { RATING, REVIEW_COUNT, WHATSAPP } from "@/lib/site";
+import { CTA, GLASS } from "@/lib/styles";
 import logo from "./logo.jpeg";
 
 const LINKS = [
@@ -12,8 +13,6 @@ const LINKS = [
   ["Reviews", "#reviews"],
   ["Contact", "#contact"],
 ];
-const CTA = "bg-linear-to-b from-[#2B2B2B] to-[#101010] transition-opacity hover:opacity-90";
-const GLASS = "rounded-2xl bg-white/10 p-5 backdrop-blur-lg sm:p-6";
 
 // Opens WhatsApp with the visitor's number pre-filled, so the academy can call them back.
 function requestCallback(e: FormEvent<HTMLFormElement>) {
@@ -121,6 +120,10 @@ export default function Hero() {
         <div className="mt-auto flex flex-col gap-6 px-5 pb-8 sm:gap-8 sm:px-8 sm:pb-12 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:pb-16">
           <div className="max-w-xl">
             <h1 className="text-3xl font-semibold leading-[1.1] tracking-tight text-[#010101] sm:text-4xl lg:text-[3.5rem] lg:text-white">
+              {/* Says who and where in the main heading, for search and AI answers; the tagline stays the visual headline. */}
+              <span className="mb-3 block text-sm font-medium tracking-normal opacity-70">
+                Rise Academy · Coaching in Sector 110, Gurugram
+              </span>{" "}
               Strong foundations today. Successful futures tomorrow.
             </h1>
             <form
