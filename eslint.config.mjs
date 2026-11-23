@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // React Bits source kept exactly as published; its "latest ref" pattern trips react-hooks/refs.
+    "components/MagicBento.jsx",
   ]),
 ]);
 

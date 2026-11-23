@@ -52,12 +52,23 @@ export const localToday = (d = new Date()) =>
 
 export const rupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
-// This month and the next n-1, as 'YYYY-MM-01' (for recording advance monthly payments).
-export function nextMonths(today: string, n: number): string[] {
+// n months as 'YYYY-MM-01', starting `from` months after this one (0 = this month, -6 = six months ago).
+export function nextMonths(today: string, n: number, from = 0): string[] {
   const [y, m] = today.split("-").map(Number);
   return Array.from({ length: n }, (_, i) => {
-    const total = m - 1 + i;
-    return `${y + Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, "0")}-01`;
+    const total = m - 1 + from + i;
+    return `${y + Math.floor(total / 12)}-${String((((total % 12) + 12) % 12) + 1).padStart(2, "0")}-01`;
+  });
+}
+
+// For the dashboard charts: per month ('YYYY-MM-01'), students with a course running in it and fees received in it.
+export function monthlyTotals(students: Student[], months: string[]) {
+  const payments = students.flatMap((s) => s.enrollments.flatMap((e) => e.payments));
+  return months.map((month) => {
+    const last = `${month.slice(0, 8)}31`; // every date in the month sorts at or before 'YYYY-MM-31'
+    const studying = students.filter((s) => s.enrollments.some((e) => e.started_on <= last && (!e.ended_on || e.ended_on >= month))).length;
+    const collected = payments.reduce((sum, p) => (p.paid_on.slice(0, 7) === month.slice(0, 7) ? sum + p.amount : sum), 0);
+    return { month, studying, collected };
   });
 }
 

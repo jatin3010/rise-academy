@@ -1,0 +1,43 @@
+/* Quick-actions bento: a pure black stage with soft light behind the grid, so the frosted cards have something to blur. */
+.crm-bento {
+  background:
+    radial-gradient(60% 55% at 15% 0%, rgba(255, 255, 255, 0.09), transparent 70%),
+    radial-gradient(50% 60% at 95% 100%, rgba(255, 255, 255, 0.06), transparent 70%),
+    #000;
+}
+
+/* Glass look through MagicBento's own variables; set on the card, they win over the theme the component puts on its root. */
+.crm-bento .magic-bento__card {
+  --mb-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%);
+  --mb-edge: rgba(255, 255, 255, 0.12);
+  --mb-highlight: rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+/* The welcome message bubble, in WhatsApp's dark-mode green; pops in with MagicBento's own keyframes and timing. */
+.crm-bento__bubble {
+  display: -webkit-box;
+  max-width: 88%;
+  margin: 14px 0 0 auto;
+  overflow: hidden;
+  padding: 8px 10px;
+  border-radius: 10px 10px 2px 10px;
+  background: #005c4b;
+  color: #e9edef;
+  font-size: 12.5px;
+  line-height: 1.45;
+  white-space: pre-line;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 9;
+  line-clamp: 9;
+  transform-origin: 100% 100%;
+}
+
+.magic-bento[data-motion] .crm-bento__bubble {
+  animation: magic-bento-pop 520ms var(--mb-spring) calc(var(--mb-delay) + 300ms) both paused;
+}
+
+.magic-bento[data-motion] .magic-bento__cell[data-state='in'] .crm-bento__bubble {
+  animation-play-state: running;
+}

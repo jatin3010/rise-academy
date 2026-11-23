@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
+import MagicBento from "@/components/MagicBento";
 import ScrollExpand from "@/components/ScrollExpand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ import {
   feeStatus,
   localToday,
   monthLabel,
+  monthlyTotals,
+  nextMonths,
   reminderText,
   rupees,
   waLink,
@@ -25,6 +28,8 @@ import { GLASS_CARD } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
 import { EnrollmentForm, PaymentForm, StudentForm } from "./forms";
 import { ImportForm } from "./import";
+import "./bento.css";
+import { AdminLock, CourseHub, FeeBars, ImportSteps, StudentTrend, WelcomePreview } from "./bento-visuals";
 
 type Panel =
   | { kind: "addStudent" }
@@ -221,6 +226,35 @@ function Dashboard({ email }: { email: string }) {
     .filter((s) => !category || s.enrollments.some((e) => e.category === category))
     .filter((s) => !dueOnly || s.enrollments.some((e) => feeStatus(e, today).overdue))
     .sort((a, b) => Number(b.active) - Number(a.active));
+  const overdueTotal = overdue.reduce((n, r) => n + r.st.balance, 0);
+  const goTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  const months = monthlyTotals(students, nextMonths(today, 7, -6)); // the last 7 months, for the two charts
+  const newest = [...active].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
+  const newestCourses = newest?.enrollments.filter((e) => e.active).map((e) => e.course) ?? [];
+  // Six MagicBento cards with our own visuals, each opening the matching part of the CRM.
+  const bento = [
+    { id: "students", visual: <StudentTrend months={months} />, title: "Student Analytics", description: `${active.length} active students in ${rows.length} courses. Open the list.`, run: () => goTo("students") },
+    {
+      id: "fees",
+      visual: <FeeBars months={months} />,
+      title: "Fee Collection",
+      description: overdueStudents ? `${rupees(overdueTotal)} overdue from ${overdueStudents} ${overdueStudents === 1 ? "student" : "students"}. Show who.` : "Everyone is paid up.",
+      run: () => { setQuery(""); setCategory(""); setDueOnly(true); goTo("students"); },
+    },
+    {
+      id: "welcome",
+      visual: (
+        <WelcomePreview
+          name={newest?.name ?? "New student"}
+          text={welcomeText({ name: newest?.name ?? "New student" }, newestCourses.length ? newestCourses : ["their course"])}
+        />
+      ),
+      colSpan: 2, rowSpan: 2, title: "Welcome New Students", description: "Add a student, then send their welcome message on WhatsApp in one tap.", run: () => setPanel({ kind: "addStudent" }) },
+    { id: "import", visual: <ImportSteps />, colSpan: 2, rowSpan: 2, title: "Excel Import", description: "Upload your register: every row is checked and previewed, then students and courses are added in one go.", run: () => setPanel({ kind: "import" }) },
+    { id: "courses", visual: <CourseHub />, title: "Course Groups", description: "School tuition, spoken English and computer courses.", run: () => goTo("courses") },
+    { id: "security", visual: <AdminLock />, title: "Admin-only Access", description: "Student data opens only for approved admin logins.", run: () => setNotice(`Signed in as ${email}. Only admin logins approved in Supabase can open student data.`) },
+  ];
 
   return (
     <Shell>
@@ -266,13 +300,13 @@ function Dashboard({ email }: { email: string }) {
         <Stat
           i={3}
           label="Fees overdue"
-          value={overdue.reduce((n, r) => n + r.st.balance, 0)}
+          value={overdueTotal}
           format={rupees}
           tone={overdue.length ? "bad" : "good"}
         />
       </section>
 
-      <section className="mt-3 grid gap-3 md:grid-cols-3" aria-label="Students by course">
+      <section id="courses" className="mt-3 grid gap-3 md:grid-cols-3" aria-label="Students by course">
         {COURSES.map((group, gi) => {
           const inGroup = rows.filter((r) => r.e.category === group.title);
           const counts = group.items.map((course) => [course, inGroup.filter((r) => r.e.course === course).length] as const);
@@ -303,7 +337,23 @@ function Dashboard({ email }: { email: string }) {
         })}
       </section>
 
-      <section className="mt-8" aria-label="Students">
+      <section className="crm-bento mt-8 rounded-3xl p-3 sm:p-4" aria-label="Quick actions">
+        <MagicBento
+          items={bento}
+          columns={4}
+          rowHeight={200}
+          gap={12}
+          radius={20}
+          theme="dark"
+          enableBorderGlow
+          enableSpotlight
+          spotlightRadius={300}
+          clickEffect
+          onItemClick={(item: (typeof bento)[number]) => item.run()}
+        />
+      </section>
+
+      <section id="students" className="mt-8" aria-label="Students">
         <div className="flex flex-wrap items-center gap-3">
           <Input
             className="h-9 max-w-xs"
