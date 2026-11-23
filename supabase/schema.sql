@@ -1,6 +1,7 @@
--- Rise Academy CRM database. Paste into Supabase → SQL Editor → Run, once, on a new project.
+-- Rise Academy CRM database. Paste into Supabase → SQL Editor → Run.
+-- Safe to run more than once: it only creates what is missing and never deletes data.
 
-create table public.students (
+create table if not exists public.students (
   id uuid primary key default gen_random_uuid(),
   name text not null check (length(trim(name)) > 0),
   phone text not null,
@@ -12,7 +13,7 @@ create table public.students (
 );
 
 -- One row per course a student takes; a student can take several.
-create table public.enrollments (
+create table if not exists public.enrollments (
   id uuid primary key default gen_random_uuid(),
   student_id uuid not null references public.students (id) on delete cascade,
   category text not null,
@@ -27,7 +28,7 @@ create table public.enrollments (
   check (fee_type <> 'monthly' or due_day is not null)
 );
 
-create table public.payments (
+create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),
   enrollment_id uuid not null references public.enrollments (id) on delete cascade,
   amount integer not null check (amount > 0),
@@ -38,11 +39,11 @@ create table public.payments (
   created_at timestamptz not null default now()
 );
 
-create index on public.enrollments (student_id);
-create index on public.payments (enrollment_id);
+create index if not exists enrollments_student_id_idx on public.enrollments (student_id);
+create index if not exists payments_enrollment_id_idx on public.payments (enrollment_id);
 
 -- Only logins listed here can see or change any data, even if someone else manages to create an account.
-create table public.admins (
+create table if not exists public.admins (
   user_id uuid primary key references auth.users (id) on delete cascade
 );
 
@@ -56,10 +57,18 @@ alter table public.enrollments enable row level security;
 alter table public.payments enable row level security;
 alter table public.admins enable row level security; -- no policies: nobody reads it directly, only is_admin()
 
+-- Newer Supabase projects give no table access by default. Logged-in users get table access here;
+-- the policies below still limit every row to admins. Logged-out visitors (anon) get nothing.
+grant select, insert, update, delete on public.students, public.enrollments, public.payments to authenticated;
+grant execute on function public.is_admin() to authenticated;
+
+drop policy if exists "admins manage students" on public.students;
 create policy "admins manage students" on public.students
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admins manage enrollments" on public.enrollments;
 create policy "admins manage enrollments" on public.enrollments
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admins manage payments" on public.payments;
 create policy "admins manage payments" on public.payments
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
