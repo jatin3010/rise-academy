@@ -7,7 +7,7 @@ import TrueFocus from "@/components/TrueFocus";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { COURSES } from "@/lib/courses";
 import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, SITE_URL, WHATSAPP } from "@/lib/site";
-import { CTA, GLASS } from "@/lib/styles";
+import { CTA, GLASS, GLASS_CARD } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 import Hero from "./hero";
 import logo from "./logo.jpeg";
@@ -97,7 +97,6 @@ const focus = { borderColor: "var(--primary)", blurAmount: 2, cornerSize: 12 };
 const big = "h-11 rounded-full px-6 text-sm font-medium";
 const ctaButton = cn(buttonVariants(), big, "text-white", CTA);
 const glassButton = cn(buttonVariants({ variant: "ghost" }), big, "bg-white/10 backdrop-blur-lg hover:bg-white/20");
-const glassCard = "rounded-2xl backdrop-blur-lg";
 
 function Stars({ className }: { className?: string }) {
   return (
@@ -124,12 +123,6 @@ export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      {/* Dimmed hero frame fixed behind the sections, so the glass panels have something to blur. Relative URL: same shortcut as the hero video. */}
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: "linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.7)), url(hero.jpg)" }}
-      />
 
       <main id="top">
         <Hero />
@@ -140,7 +133,7 @@ export default function Home() {
             <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">{about}</p>
             <div className="grid gap-5 md:grid-cols-3">
               {courses.map(({ icon: Icon, title, text, items }) => (
-                <Card key={title} className={`p-2 ${glassCard}`}>
+                <Card key={title} className={`p-2 ${GLASS_CARD}`}>
                   <CardHeader>
                     <Icon className="size-8 text-white/80" aria-hidden />
                     <CardTitle className="mt-3 text-xl font-semibold tracking-tight">{title}</CardTitle>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
+import ScrollExpand from "@/components/ScrollExpand";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,6 +21,7 @@ import {
   type FeeStatus,
   type Student,
 } from "@/lib/fees";
+import { GLASS_CARD } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
 import { EnrollmentForm, PaymentForm, StudentForm } from "./forms";
 
@@ -32,9 +34,15 @@ type Panel =
   | null;
 
 const waButton = "inline-flex h-7 items-center rounded-lg bg-[#00a884] px-2.5 text-xs font-medium text-[#0b141a] hover:opacity-90";
+// Panels fade and rise in one after another; motion-safe keeps them still for people who prefer reduced motion.
+const rise = "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 duration-500 fill-mode-both";
+const lift = "transition hover:-translate-y-0.5 hover:bg-white/[0.14]";
+const stagger = (i: number) => ({ animationDelay: `${Math.min(i, 8) * 60}ms` });
 
 export default function AdminApp() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+  // True from pressing "Sign in" until the opening animation ends, so the login screen stays up while it plays.
+  const [entering, setEntering] = useState(false);
 
   useEffect(() => {
     if (!supabase) return;
@@ -45,7 +53,7 @@ export default function AdminApp() {
 
   if (!supabase) return <SetupNeeded />;
   if (session === undefined) return <Shell><p className="text-white/60">Loading…</p></Shell>;
-  if (!session) return <Login />;
+  if (!session || entering) return <Login onEnter={setEntering} />;
   return <Dashboard email={session.user.email ?? ""} />;
 }
 
@@ -65,29 +73,80 @@ function SetupNeeded() {
   );
 }
 
-function Login() {
+const NARROW = "(max-width: 640px)";
+const subscribeNarrow = (onChange: () => void) => {
+  const query = window.matchMedia(NARROW);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+};
+const useNarrow = () => useSyncExternalStore(subscribeNarrow, () => window.matchMedia(NARROW).matches, () => false);
+
+// The site's video plays in a rounded window behind the login card. After a correct sign-in the card fades,
+// the video expands to full screen with "Welcome back", then the dashboard takes over.
+function Login({ onEnter }: { onEnter: (entering: boolean) => void }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState(false);
+  const narrow = useNarrow();
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const f = new FormData(event.currentTarget);
     setBusy(true);
+    setError("");
+    onEnter(true);
     const { error } = await supabase!.auth.signInWithPassword({ email: String(f.get("email")), password: String(f.get("password")) });
-    setBusy(false);
-    if (error) setError(error.message);
+    if (error) {
+      setBusy(false);
+      setError(error.message);
+      onEnter(false);
+      return;
+    }
+    setOpen(true);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setTimeout(() => onEnter(false), reduce ? 0 : 1400);
   }
+
   return (
-    <Shell>
-      <Card className="mx-auto mt-10 max-w-sm gap-4 bg-neutral-900 p-6">
-        <h1 className="text-xl font-semibold">Rise Academy admin</h1>
-        <form onSubmit={onSubmit} className="grid gap-3">
-          <Input name="email" type="email" autoComplete="email" placeholder="Email" required aria-label="Email" />
-          <Input name="password" type="password" autoComplete="current-password" placeholder="Password" required aria-label="Password" />
-          {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
-          <Button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
-        </form>
-      </Card>
-    </Shell>
+    <main className="relative h-svh w-full overflow-hidden">
+      {/* shortcut: relative media URLs, same limit as in layout.tsx */}
+      <ScrollExpand
+        mediaType="video"
+        src="hero.mp4"
+        poster="hero.jpg"
+        progress={open ? 1 : 0}
+        startWidth={narrow ? 92 : 52}
+        startHeight={narrow ? 78 : 70}
+        startRadius={28}
+        mediaZoom={1.2}
+        scrollDistance={0}
+        holdDistance={0}
+        smoothing={0.25}
+        overlayScrim={0.8}
+      >
+        {/* The shadow keeps the text readable over the bright mist in the middle of the video. */}
+        <div className="[text-shadow:0_2px_20px_rgb(0_0_0/0.7)]">
+          <p className="text-3xl font-semibold tracking-tight text-white sm:text-5xl">Welcome back</p>
+          <p className="mt-2 text-white/85">Opening your dashboard…</p>
+        </div>
+      </ScrollExpand>
+      <div
+        className={`absolute inset-0 grid place-items-center p-4 transition duration-500 ${open ? "pointer-events-none scale-95 opacity-0" : ""}`}
+      >
+        <Card className={`w-[min(22rem,80vw)] gap-4 bg-black/35 p-6 ${GLASS_CARD} ${rise}`}>
+          <div>
+            <h1 className="text-xl font-semibold">Rise Academy admin</h1>
+            <p className="text-sm text-white/60">Sign in to manage students and fees</p>
+          </div>
+          <form onSubmit={onSubmit} className="grid gap-3">
+            <Input name="email" type="email" autoComplete="email" placeholder="Email" required aria-label="Email" />
+            <Input name="password" type="password" autoComplete="current-password" placeholder="Password" required aria-label="Password" />
+            {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
+            <Button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
+          </form>
+        </Card>
+      </div>
+    </main>
   );
 }
 
@@ -137,19 +196,27 @@ function Dashboard({ email }: { email: string }) {
     else reload();
   }
 
+  // Leaving stops every current course first, so no monthly fees build up after the student left.
+  async function markLeft(s: Student) {
+    const { error } = await db.from("enrollments").update({ active: false, ended_on: today }).eq("student_id", s.id).eq("active", true);
+    if (error) return setError(error.message);
+    await act(db.from("students").update({ active: false }).eq("id", s.id));
+  }
+
   if (!students) {
     return <Shell>{error ? <p className="text-red-400">{error}</p> : <p className="text-white/60">Loading students…</p>}</Shell>;
   }
 
   const active = students.filter((s) => s.active);
-  const rows = active.flatMap((s) => s.enrollments.filter((e) => e.active).map((e) => ({ s, e, st: feeStatus(e, today) })));
-  const overdue = rows.filter((r) => r.st.overdue);
+  const all = students.flatMap((s) => s.enrollments.map((e) => ({ s, e, st: feeStatus(e, today) })));
+  const rows = all.filter((r) => r.s.active && r.e.active); // current enrolments, for the course counts
+  const overdue = all.filter((r) => r.st.overdue); // includes stopped courses: money owed from before they stopped
   const overdueStudents = new Set(overdue.map((r) => r.s.id)).size;
   const q = query.toLowerCase();
   const visible = students
     .filter((s) => !q || `${s.name} ${s.phone} ${s.guardian_name ?? ""}`.toLowerCase().includes(q))
     .filter((s) => !category || s.enrollments.some((e) => e.category === category))
-    .filter((s) => !dueOnly || s.enrollments.some((e) => e.active && feeStatus(e, today).overdue))
+    .filter((s) => !dueOnly || s.enrollments.some((e) => feeStatus(e, today).overdue))
     .sort((a, b) => Number(b.active) - Number(a.active));
 
   return (
@@ -172,7 +239,7 @@ function Dashboard({ email }: { email: string }) {
       )}
 
       {welcome && (
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg bg-[#005c4b]/40 px-4 py-3 text-sm" role="status">
+        <div className={`mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-[#005c4b]/40 px-4 py-3 text-sm backdrop-blur-lg ${rise}`} role="status">
           <span>{welcome.name} was added.</span>
           <a className={waButton} href={waLink(welcome.phone, welcomeText(welcome, welcome.courses))} target="_blank" rel="noopener">
             Send welcome on WhatsApp
@@ -182,33 +249,43 @@ function Dashboard({ email }: { email: string }) {
       )}
 
       <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Summary">
-        <Stat label="Active students" value={active.length} />
-        <Stat label="Course enrolments" value={rows.length} />
-        <Stat label="Students with fees due" value={overdueStudents} tone={overdueStudents ? "bad" : "good"} />
-        <Stat label="Fees overdue" value={rupees(overdue.reduce((n, r) => n + r.st.balance, 0))} tone={overdue.length ? "bad" : "good"} />
+        <Stat i={0} label="Active students" value={active.length} />
+        <Stat i={1} label="Course enrolments" value={rows.length} />
+        <Stat i={2} label="Students with fees due" value={overdueStudents} tone={overdueStudents ? "bad" : "good"} />
+        <Stat
+          i={3}
+          label="Fees overdue"
+          value={overdue.reduce((n, r) => n + r.st.balance, 0)}
+          format={rupees}
+          tone={overdue.length ? "bad" : "good"}
+        />
       </section>
 
       <section className="mt-3 grid gap-3 md:grid-cols-3" aria-label="Students by course">
-        {COURSES.map((group) => {
+        {COURSES.map((group, gi) => {
           const inGroup = rows.filter((r) => r.e.category === group.title);
+          const counts = group.items.map((course) => [course, inGroup.filter((r) => r.e.course === course).length] as const);
+          const most = Math.max(1, ...counts.map(([, n]) => n));
           return (
-            <Card key={group.title} className="gap-2 p-4">
+            <Card key={group.title} className={`gap-2 p-4 ${GLASS_CARD} ${rise} ${lift}`} style={stagger(gi + 4)}>
               <div className="flex items-baseline justify-between gap-2">
                 <h2 className="font-semibold">{group.title}</h2>
-                <span className="text-2xl font-semibold">{inGroup.length}</span>
+                <span className="text-2xl font-semibold"><CountUp value={inGroup.length} /></span>
               </div>
-              <ul className="grid gap-1 text-sm">
-                {group.items.map((course) => {
-                  const n = inGroup.filter((r) => r.e.course === course).length;
-                  return (
-                    <li key={course} className={`flex justify-between ${n ? "" : "text-white/40"}`}>
+              <ul className="grid gap-1.5 text-sm">
+                {counts.map(([course, n]) => (
+                  <li key={course} className={n ? "" : "text-white/40"}>
+                    <div className="flex justify-between">
                       <button className="text-left hover:underline" onClick={() => { setCategory(group.title); setQuery(""); }}>
                         {course}
                       </button>
                       <span>{n}</span>
-                    </li>
-                  );
-                })}
+                    </div>
+                    <div className="mt-1 h-1 rounded-full bg-white/10" aria-hidden>
+                      <div className="h-full origin-left rounded-full bg-white/60 motion-safe:animate-grow-x" style={{ width: `${(n / most) * 100}%` }} />
+                    </div>
+                  </li>
+                ))}
               </ul>
             </Card>
           );
@@ -247,9 +324,9 @@ function Dashboard({ email }: { email: string }) {
         )}
 
         <ul className="mt-4 grid gap-3">
-          {visible.map((s) => (
-            <li key={s.id}>
-              <Card className={`gap-3 p-4 ${s.active ? "" : "opacity-60"}`}>
+          {visible.map((s, i) => (
+            <li key={s.id} className={rise} style={stagger(i)}>
+              <Card className={`gap-3 p-4 ${GLASS_CARD} ${lift} ${s.active ? "" : "opacity-60"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <h3 className="font-semibold">
@@ -273,9 +350,13 @@ function Dashboard({ email }: { email: string }) {
                     </a>
                     <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "addCourse", student: s })}>Add course</Button>
                     <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "editStudent", student: s })}>Edit</Button>
-                    <Button size="sm" variant="ghost" onClick={() => act(db.from("students").update({ active: !s.active }).eq("id", s.id))}>
-                      {s.active ? "Mark as left" : "Re-join"}
-                    </Button>
+                    {s.active ? (
+                      <Button size="sm" variant="ghost" onClick={() => markLeft(s)}>Mark as left</Button>
+                    ) : (
+                      <Button size="sm" variant="ghost" onClick={() => act(db.from("students").update({ active: true }).eq("id", s.id))}>
+                        Re-join
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="destructive"
@@ -296,20 +377,24 @@ function Dashboard({ email }: { email: string }) {
                         <span className="text-white/60">
                           · {e.fee_type === "monthly" ? `${rupees(e.fee_amount)}/month, due by day ${e.due_day}` : `${rupees(e.fee_amount)} course, paid ${rupees(st.paid)}`}
                         </span>
+                        {e.ended_on && <span className="text-white/60">· stopped {dateLabel(e.ended_on)}</span>}
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-sm">
                         <FeeLine e={e} st={st} />
                         <span className="grow" />
-                        {e.active && st.balance > 0 && (
+                        {st.balance > 0 && (
                           <a className={waButton} href={waLink(s.phone, reminderText(s, e, st))} target="_blank" rel="noopener">
                             Send fee reminder
                           </a>
                         )}
                         <Button size="sm" onClick={() => setPanel({ kind: "payment", student: s, enrollment: e })}>Record payment</Button>
                         <Button size="sm" variant="outline" onClick={() => setPanel({ kind: "editCourse", student: s, enrollment: e })}>Edit fee</Button>
-                        <Button size="sm" variant="ghost" onClick={() => act(db.from("enrollments").update({ active: !e.active }).eq("id", e.id))}>
-                          {e.active ? "Stop course" : "Resume"}
-                        </Button>
+                        {/* No "Resume": restarting after a gap would charge the gap months. Use "Add course" instead. */}
+                        {e.active && (
+                          <Button size="sm" variant="ghost" onClick={() => act(db.from("enrollments").update({ active: false, ended_on: today }).eq("id", e.id))}>
+                            Stop course
+                          </Button>
+                        )}
                       </div>
                       {e.payments.length > 0 && (
                         <details className="mt-2 text-sm">
@@ -416,14 +501,48 @@ function panelTitle(panel: NonNullable<Panel>) {
   }
 }
 
-function Stat({ label, value, tone }: { label: string; value: ReactNode; tone?: "good" | "bad" }) {
+function Stat({
+  i,
+  label,
+  value,
+  format,
+  tone,
+}: {
+  i: number;
+  label: string;
+  value: number;
+  format?: (n: number) => string;
+  tone?: "good" | "bad";
+}) {
   const color = tone === "bad" ? "text-red-400" : tone === "good" ? "text-emerald-400" : "";
   return (
-    <Card className="gap-1 p-4">
+    <Card className={`gap-1 p-4 ${GLASS_CARD} ${rise} ${lift}`} style={stagger(i)}>
       <span className="text-sm text-white/60">{label}</span>
-      <span className={`text-2xl font-semibold ${color}`}>{value}</span>
+      <span className={`text-2xl font-semibold tabular-nums ${color}`}>
+        <CountUp value={value} format={format} />
+      </span>
     </Card>
   );
+}
+
+// Counts up to the value (and from the old value when it changes); jumps straight there for reduced motion.
+function CountUp({ value, format = String }: { value: number; format?: (n: number) => string }) {
+  const [shown, setShown] = useState(0);
+  const from = useRef(0);
+  useEffect(() => {
+    const start = from.current;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const began = performance.now();
+    let frame = requestAnimationFrame(function step(now) {
+      const t = reduce ? 1 : Math.min(1, (now - began) / 800);
+      const n = Math.round(start + (value - start) * (1 - (1 - t) ** 3));
+      from.current = n;
+      setShown(n);
+      if (t < 1) frame = requestAnimationFrame(step);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [value]);
+  return <>{format(shown)}</>;
 }
 
 function FeeLine({ e, st }: { e: Enrollment; st: FeeStatus }) {
@@ -446,14 +565,16 @@ function Modal({ title, children, onClose }: { title: string; children: ReactNod
   return (
     // data-lenis-prevent lets the form scroll on its own instead of the page's smooth scrolling taking the wheel.
     <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4"
+      className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in duration-200"
       role="dialog"
       aria-modal="true"
       aria-label={title}
       data-lenis-prevent
       onKeyDown={(e) => e.key === "Escape" && onClose()}
     >
-      <Card className="max-h-[90vh] w-full max-w-lg gap-4 overflow-y-auto bg-neutral-900 p-6">
+      <Card
+        className={`max-h-[90vh] w-full max-w-lg gap-4 overflow-y-auto bg-neutral-900/75 p-6 ${GLASS_CARD} backdrop-blur-xl motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2 duration-300`}
+      >
         <h2 className="text-lg font-semibold">{title}</h2>
         {children}
       </Card>

@@ -5,7 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { COURSES } from "@/lib/courses";
-import { feeStatus, localToday, monthLabel, nextMonths, normalizePhone, type Enrollment, type Student } from "@/lib/fees";
+import {
+  feeStatus,
+  localToday,
+  monthLabel,
+  nextMonths,
+  normalizePhone,
+  paidFor,
+  rupees,
+  type Enrollment,
+  type Student,
+} from "@/lib/fees";
 
 export type StudentValues = Pick<Student, "name" | "phone" | "guardian_name" | "class_level" | "notes">;
 export type EnrollmentValues = Pick<
@@ -205,9 +215,9 @@ export function PaymentForm({
   const today = localToday();
   const monthly = enrollment.fee_type === "monthly";
   const status = feeStatus(enrollment, today);
-  const paidMonths = new Set(enrollment.payments.map((p) => p.for_month));
-  // Unpaid months first (oldest first), then the next few months for fees paid in advance.
-  const months = [...new Set([...status.unpaidMonths, ...nextMonths(today, 3)])].filter((m) => !paidMonths.has(m));
+  // Unpaid or part-paid months first (oldest first), then the next few months for fees paid in advance.
+  const left = (m: string) => enrollment.fee_amount - paidFor(enrollment, m);
+  const months = [...new Set([...status.unpaidMonths, ...nextMonths(today, 3)])].filter((m) => left(m) > 0);
 
   const { error, busy, onSubmit } = useSubmit((f) => {
     const amount = Number(text(f, "amount"));
@@ -232,7 +242,7 @@ export function PaymentForm({
             step={1}
             required
             autoFocus
-            defaultValue={monthly ? enrollment.fee_amount : status.balance || undefined}
+            defaultValue={monthly ? (months[0] ? left(months[0]) : enrollment.fee_amount) : status.balance || undefined}
           />
         </Field>
         <Field label="Paid on">
@@ -242,7 +252,12 @@ export function PaymentForm({
       {monthly ? (
         <Field label="For month">
           <select name="for_month" className={selectClass}>
-            {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+            {months.map((m) => (
+              <option key={m} value={m}>
+                {monthLabel(m)}
+                {left(m) < enrollment.fee_amount && ` (${rupees(left(m))} left)`}
+              </option>
+            ))}
           </select>
         </Field>
       ) : (

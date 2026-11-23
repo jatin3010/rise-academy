@@ -21,6 +21,7 @@ export type Enrollment = {
   due_day: number | null; // monthly: day of the month the fee is due (1–28)
   next_due_on: string | null; // course: date the next instalment is due
   started_on: string;
+  ended_on: string | null; // set when the course stops; monthly fees are not owed after it
   active: boolean;
   payments: Payment[];
 };
@@ -77,12 +78,17 @@ export function dueMonths(startedOn: string, dueDay: number, today: string): str
   return months;
 }
 
+// Total recorded for one month of a monthly fee; a month is paid only once this reaches the fee (part-payments add up).
+export const paidFor = (e: Enrollment, month: string) =>
+  e.payments.reduce((sum, p) => (p.for_month === month ? sum + p.amount : sum), 0);
+
 export function feeStatus(e: Enrollment, today: string): FeeStatus {
   const paid = e.payments.reduce((sum, p) => sum + p.amount, 0);
   if (e.fee_type === "monthly") {
-    const covered = new Set(e.payments.map((p) => p.for_month));
-    const unpaidMonths = dueMonths(e.started_on, e.due_day ?? 1, today).filter((m) => !covered.has(m));
-    return { balance: unpaidMonths.length * e.fee_amount, overdue: unpaidMonths.length > 0, unpaidMonths, paid };
+    const until = e.ended_on && e.ended_on < today ? e.ended_on : today;
+    const unpaidMonths = dueMonths(e.started_on, e.due_day ?? 1, until).filter((m) => paidFor(e, m) < e.fee_amount);
+    const balance = unpaidMonths.reduce((sum, m) => sum + e.fee_amount - paidFor(e, m), 0);
+    return { balance, overdue: unpaidMonths.length > 0, unpaidMonths, paid };
   }
   const balance = Math.max(0, e.fee_amount - paid);
   const overdue = balance > 0 && e.next_due_on !== null && e.next_due_on <= today;

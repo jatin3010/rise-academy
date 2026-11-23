@@ -4,6 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Bars that grow from the left (CRM course counts). Used as motion-safe:animate-grow-x. */
+@theme {
+  --animate-grow-x: grow-x 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  @keyframes grow-x {
+    from {
+      transform: scaleX(0);
+    }
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -122,11 +132,15 @@
   * {
     @apply border-border outline-ring/50;
   }
-  /* Page colour on html, not body, so the fixed backdrop in page.tsx (-z-10) paints above it. */
+  /* Page colour on html, not body, so the fixed backdrop in layout.tsx (-z-10) paints above it. */
   body {
     @apply text-foreground;
   }
   html {
     @apply bg-background font-sans;
+  }
+  /* Windows draws open dropdown lists on white but the options inherit the site's white text; without this they are invisible until hovered. */
+  option {
+    @apply bg-neutral-900 text-white;
   }
 }

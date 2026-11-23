@@ -28,6 +28,15 @@ create table if not exists public.enrollments (
   check (fee_type <> 'monthly' or due_day is not null)
 );
 
+-- When a course stops. Monthly fees are not owed after this date.
+alter table public.enrollments add column if not exists ended_on date;
+-- Courses stopped before ended_on existed, and current courses of students already marked as left,
+-- get today as their end date so their fees stop growing.
+update public.enrollments set ended_on = current_date where active = false and ended_on is null;
+update public.enrollments e set active = false, ended_on = current_date
+  from public.students s
+  where s.id = e.student_id and s.active = false and e.active;
+
 create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),
   enrollment_id uuid not null references public.enrollments (id) on delete cascade,
