@@ -43,7 +43,6 @@ type Panel =
 const waButton = "inline-flex h-7 items-center rounded-lg bg-[#00a884] px-2.5 text-xs font-medium text-[#0b141a] hover:opacity-90";
 // Panels fade and rise in one after another; motion-safe keeps them still for people who prefer reduced motion.
 const rise = "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 duration-500 fill-mode-both";
-const lift = "transition hover:-translate-y-0.5 hover:bg-white/[0.14]";
 const stagger = (i: number) => ({ animationDelay: `${Math.min(i, 8) * 60}ms` });
 
 export default function AdminApp() {
@@ -65,7 +64,12 @@ export default function AdminApp() {
 }
 
 function Shell({ children }: { children: ReactNode }) {
-  return <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">{children}</main>;
+  return (
+    <main className="crm mx-auto w-full max-w-6xl px-4 py-8 sm:py-12">
+      <div className="crm-stage fixed inset-0 -z-10" aria-hidden />
+      {children}
+    </main>
+  );
 }
 
 function SetupNeeded() {
@@ -293,51 +297,60 @@ function Dashboard({ email }: { email: string }) {
         </div>
       )}
 
-      <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Summary">
-        <Stat i={0} label="Active students" value={active.length} />
-        <Stat i={1} label="Course enrolments" value={rows.length} />
-        <Stat i={2} label="Students with fees due" value={overdueStudents} tone={overdueStudents ? "bad" : "good"} />
-        <Stat
-          i={3}
-          label="Fees overdue"
-          value={overdueTotal}
-          format={rupees}
-          tone={overdue.length ? "bad" : "good"}
+      {/* The numbers and course groups are MagicBento grids too (same spotlight and border glow), with our own content. */}
+      <section className="mt-6" aria-label="Summary">
+        <MagicBento
+          rowHeight={104}
+          clickEffect={false}
+          items={[
+            { id: "active", content: <Stat label="Active students" value={active.length} /> },
+            { id: "enrolments", content: <Stat label="Course enrolments" value={rows.length} /> },
+            { id: "dueStudents", content: <Stat label="Students with fees due" value={overdueStudents} tone={overdueStudents ? "bad" : "good"} /> },
+            { id: "overdue", content: <Stat label="Fees overdue" value={overdueTotal} format={rupees} tone={overdue.length ? "bad" : "good"} /> },
+          ]}
         />
       </section>
 
-      <section id="courses" className="mt-3 grid gap-3 md:grid-cols-3" aria-label="Students by course">
-        {COURSES.map((group, gi) => {
-          const inGroup = rows.filter((r) => r.e.category === group.title);
-          const counts = group.items.map((course) => [course, inGroup.filter((r) => r.e.course === course).length] as const);
-          const most = Math.max(1, ...counts.map(([, n]) => n));
-          return (
-            <Card key={group.title} className={`gap-2 p-4 ${GLASS_CARD} ${rise} ${lift}`} style={stagger(gi + 4)}>
-              <div className="flex items-baseline justify-between gap-2">
-                <h2 className="font-semibold">{group.title}</h2>
-                <span className="text-2xl font-semibold"><CountUp value={inGroup.length} /></span>
-              </div>
-              <ul className="grid gap-1.5 text-sm">
-                {counts.map(([course, n]) => (
-                  <li key={course} className={n ? "" : "text-white/40"}>
-                    <div className="flex justify-between">
-                      <button className="text-left hover:underline" onClick={() => { setCategory(group.title); setQuery(""); }}>
-                        {course}
-                      </button>
-                      <span>{n}</span>
-                    </div>
-                    <div className="mt-1 h-1 rounded-full bg-white/10" aria-hidden>
-                      <div className="h-full origin-left rounded-full bg-white/60 motion-safe:animate-grow-x" style={{ width: `${(n / most) * 100}%` }} />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          );
-        })}
+      <section id="courses" className="mt-3" aria-label="Students by course">
+        <MagicBento
+          columns={3}
+          clickEffect={false}
+          style={{ gridAutoRows: "auto" }} // rows grow to fit each group's course list
+          items={COURSES.map((group) => {
+            const inGroup = rows.filter((r) => r.e.category === group.title);
+            const counts = group.items.map((course) => [course, inGroup.filter((r) => r.e.course === course).length] as const);
+            const most = Math.max(1, ...counts.map(([, n]) => n));
+            return {
+              id: group.title,
+              content: (
+                <>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h2 className="font-semibold">{group.title}</h2>
+                    <span className="text-2xl font-semibold"><CountUp value={inGroup.length} /></span>
+                  </div>
+                  <ul className="grid gap-1.5 text-sm">
+                    {counts.map(([course, n]) => (
+                      <li key={course} className={n ? "" : "text-white/40"}>
+                        <div className="flex justify-between">
+                          <button className="text-left hover:underline" onClick={() => { setCategory(group.title); setQuery(""); goTo("students"); }}>
+                            {course}
+                          </button>
+                          <span>{n}</span>
+                        </div>
+                        <div className="mt-1 h-1 rounded-full bg-white/10" aria-hidden>
+                          <div className="h-full origin-left rounded-full bg-white/60 motion-safe:animate-grow-x" style={{ width: `${(n / most) * 100}%` }} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ),
+            };
+          })}
+        />
       </section>
 
-      <section className="crm-bento mt-8 rounded-3xl p-3 sm:p-4" aria-label="Quick actions">
+      <section className="mt-3" aria-label="Quick actions">
         <MagicBento
           items={bento}
           columns={4}
@@ -387,7 +400,7 @@ function Dashboard({ email }: { email: string }) {
         <ul className="mt-4 grid gap-3">
           {visible.map((s, i) => (
             <li key={s.id} className={rise} style={stagger(i)}>
-              <Card className={`gap-3 p-4 ${GLASS_CARD} ${lift} ${s.active ? "" : "opacity-60"}`}>
+              <Card className={`crm-card gap-3 p-4 ${s.active ? "" : "opacity-60"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <h3 className="font-semibold">
@@ -431,7 +444,7 @@ function Dashboard({ email }: { email: string }) {
                 {s.enrollments.map((e) => {
                   const st = feeStatus(e, today);
                   return (
-                    <div key={e.id} className={`rounded-lg bg-white/5 p-3 ${e.active ? "" : "opacity-60"}`}>
+                    <div key={e.id} className={`rounded-xl bg-white/[0.03] p-3 ring-1 ring-white/[0.06] ${e.active ? "" : "opacity-60"}`}>
                       <div className="flex flex-wrap items-center gap-2 text-sm">
                         <Badge variant="secondary">{e.course}</Badge>
                         <span className="text-white/60">{e.category}</span>
@@ -584,27 +597,15 @@ function panelTitle(panel: NonNullable<Panel>) {
   }
 }
 
-function Stat({
-  i,
-  label,
-  value,
-  format,
-  tone,
-}: {
-  i: number;
-  label: string;
-  value: number;
-  format?: (n: number) => string;
-  tone?: "good" | "bad";
-}) {
+function Stat({ label, value, format, tone }: { label: string; value: number; format?: (n: number) => string; tone?: "good" | "bad" }) {
   const color = tone === "bad" ? "text-red-400" : tone === "good" ? "text-emerald-400" : "";
   return (
-    <Card className={`gap-1 p-4 ${GLASS_CARD} ${rise} ${lift}`} style={stagger(i)}>
+    <>
       <span className="text-sm text-white/60">{label}</span>
-      <span className={`text-2xl font-semibold tabular-nums ${color}`}>
+      <span className={`mt-auto text-3xl font-semibold tabular-nums ${color}`}>
         <CountUp value={value} format={format} />
       </span>
-    </Card>
+    </>
   );
 }
 
@@ -656,7 +657,7 @@ function Modal({ title, children, onClose }: { title: string; children: ReactNod
       onKeyDown={(e) => e.key === "Escape" && onClose()}
     >
       <Card
-        className={`max-h-[90vh] w-full max-w-lg gap-4 overflow-y-auto bg-neutral-900/75 p-6 ${GLASS_CARD} backdrop-blur-xl motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2 duration-300`}
+        className={`max-h-[90vh] w-full max-w-lg gap-4 overflow-y-auto rounded-[20px] bg-neutral-950/85 p-6 ring-white/15 backdrop-blur-xl motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2 duration-300`}
       >
         <h2 className="text-lg font-semibold">{title}</h2>
         {children}

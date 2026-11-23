@@ -1,18 +1,42 @@
-/* Quick-actions bento: a pure black stage with soft light behind the grid, so the frosted cards have something to blur. */
-.crm-bento {
+/* The CRM dashboard's look, taken from MagicBento: frosted glass cards on a pure black stage. */
+.crm {
+  --glass-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%);
+  --glass-edge: rgba(255, 255, 255, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.16);
+}
+
+/* Pure black with soft light, fixed behind the page, so the frosted cards have something to blur. */
+.crm-stage {
   background:
     radial-gradient(60% 55% at 15% 0%, rgba(255, 255, 255, 0.09), transparent 70%),
     radial-gradient(50% 60% at 95% 100%, rgba(255, 255, 255, 0.06), transparent 70%),
     #000;
 }
 
-/* Glass look through MagicBento's own variables; set on the card, they win over the theme the component puts on its root. */
-.crm-bento .magic-bento__card {
-  --mb-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%);
-  --mb-edge: rgba(255, 255, 255, 0.12);
-  --mb-highlight: rgba(255, 255, 255, 0.16);
+/* MagicBento cards: glass through the component's own variables; set on the card, they win over the theme on its root. */
+.crm .magic-bento__card {
+  --mb-surface: var(--glass-surface);
+  --mb-edge: var(--glass-edge);
+  --mb-highlight: var(--glass-highlight);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
+}
+
+/* Student cards: the same glass, without MagicBento's per-card cursor tracking (the list can be hundreds long). */
+.crm-card {
+  border-radius: 20px;
+  background: var(--glass-surface);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    inset 0 1px 0 var(--glass-highlight),
+    0 24px 48px -28px rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  transition: box-shadow 200ms ease;
+}
+
+.crm-card:hover {
+  --glass-edge: rgba(255, 255, 255, 0.24);
 }
 
 /* The welcome message bubble, in WhatsApp's dark-mode green; pops in with MagicBento's own keyframes and timing. */
