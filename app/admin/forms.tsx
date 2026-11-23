@@ -14,14 +14,11 @@ import {
   paidFor,
   rupees,
   type Enrollment,
+  type EnrollmentValues,
   type Student,
+  type StudentValues,
 } from "@/lib/fees";
 
-export type StudentValues = Pick<Student, "name" | "phone" | "guardian_name" | "class_level" | "notes">;
-export type EnrollmentValues = Pick<
-  Enrollment,
-  "category" | "course" | "fee_type" | "fee_amount" | "due_day" | "next_due_on" | "started_on"
->;
 export type PaymentValues = { amount: number; paid_on: string; for_month: string | null; method: string; note: string | null };
 // Each form hands its values to the page, which saves them and returns an error message or null.
 type Save<T> = (values: T) => Promise<string | null>;

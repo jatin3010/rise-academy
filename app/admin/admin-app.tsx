@@ -24,6 +24,7 @@ import {
 import { GLASS_CARD } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
 import { EnrollmentForm, PaymentForm, StudentForm } from "./forms";
+import { ImportForm } from "./import";
 
 type Panel =
   | { kind: "addStudent" }
@@ -31,6 +32,7 @@ type Panel =
   | { kind: "addCourse"; student: Student }
   | { kind: "editCourse"; student: Student; enrollment: Enrollment }
   | { kind: "payment"; student: Student; enrollment: Enrollment }
+  | { kind: "import" }
   | null;
 
 const waButton = "inline-flex h-7 items-center rounded-lg bg-[#00a884] px-2.5 text-xs font-medium text-[#0b141a] hover:opacity-90";
@@ -157,6 +159,7 @@ function Dashboard({ email }: { email: string }) {
   const [error, setError] = useState("");
   const [panel, setPanel] = useState<Panel>(null);
   const [welcome, setWelcome] = useState<{ name: string; phone: string; courses: string[] } | null>(null);
+  const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [dueOnly, setDueOnly] = useState(false);
@@ -228,6 +231,7 @@ function Dashboard({ email }: { email: string }) {
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setPanel({ kind: "addStudent" })}>+ Add student</Button>
+          <Button variant="outline" onClick={() => setPanel({ kind: "import" })}>Import from Excel</Button>
           <Button variant="ghost" onClick={() => db.auth.signOut()}>Sign out</Button>
         </div>
       </header>
@@ -236,6 +240,13 @@ function Dashboard({ email }: { email: string }) {
         <p className="mt-4 rounded-lg bg-red-500/15 px-3 py-2 text-sm text-red-300" role="alert">
           {error} <button className="ml-2 underline" onClick={() => setError("")}>Dismiss</button>
         </p>
+      )}
+
+      {notice && (
+        <div className={`mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-sm backdrop-blur-lg ${rise}`} role="status">
+          <span>{notice}</span>
+          <button className="ml-auto text-white/60 underline" onClick={() => setNotice("")}>Close</button>
+        </div>
       )}
 
       {welcome && (
@@ -468,6 +479,27 @@ function Dashboard({ email }: { email: string }) {
               onSave={(values) => save(async () => (await db.from("enrollments").update(values).eq("id", panel.enrollment.id)).error?.message ?? null)}
             />
           )}
+          {panel.kind === "import" && (
+            <ImportForm
+              existing={students}
+              onCancel={() => setPanel(null)}
+              onImport={(plan) =>
+                save(async () => {
+                  // shortcut: one request each for students and courses; fine for a few thousand rows, send in batches beyond that.
+                  const { error } = await db.from("students").insert(plan.map((p) => p.student));
+                  if (error) return error.message;
+                  const { error: e2 } = await db.from("enrollments").insert(plan.flatMap((p) => p.enrollments));
+                  if (e2) {
+                    // Remove the students again so the same sheet can simply be uploaded once more (they'd be skipped as duplicates).
+                    await db.from("students").delete().in("id", plan.map((p) => p.student.id));
+                    return `Nothing was imported: ${e2.message}`;
+                  }
+                  setNotice(`Imported ${plan.length} students with ${plan.reduce((n, p) => n + p.enrollments.length, 0)} courses.`);
+                  return null;
+                })
+              }
+            />
+          )}
           {panel.kind === "payment" && (
             <PaymentForm
               enrollment={panel.enrollment}
@@ -498,6 +530,7 @@ function panelTitle(panel: NonNullable<Panel>) {
     case "addCourse": return `Add a course for ${panel.student.name}`;
     case "editCourse": return `Edit ${panel.enrollment.course} fee for ${panel.student.name}`;
     case "payment": return `Record payment: ${panel.student.name}, ${panel.enrollment.course}`;
+    case "import": return "Import students from Excel";
   }
 }
 

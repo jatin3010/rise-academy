@@ -38,7 +38,14 @@ export type Student = {
   enrollments: Enrollment[];
 };
 
-export type FeeStatus = { balance: number; overdue: boolean; unpaidMonths: string[]; paid: number };
+// What the add/edit forms and the Excel import save for a student and for one of their courses.
+export type StudentValues = Pick<Student, "name" | "phone" | "guardian_name" | "class_level" | "notes">;
+export type EnrollmentValues = Pick<
+  Enrollment,
+  "category" | "course" | "fee_type" | "fee_amount" | "due_day" | "next_due_on" | "started_on"
+>;
+
+export type FeeStatus ={ balance: number; overdue: boolean; unpaidMonths: string[]; paid: number };
 
 export const localToday = (d = new Date()) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
