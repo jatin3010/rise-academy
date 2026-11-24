@@ -4,7 +4,7 @@ import { useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { COURSES } from "@/lib/courses";
 import type { Student } from "@/lib/fees";
-import { parseCsv, planImport, TEMPLATE_HEADERS, type Cell, type ImportPlan } from "@/lib/import";
+import { parseCsv, planImport, TEMPLATE_HEADERS, type ImportPlan, type Sheet } from "@/lib/import";
 
 export function saveFile(blob: Blob, name: string) {
   const link = document.createElement("a");
@@ -17,10 +17,11 @@ export function saveFile(blob: Blob, name: string) {
 // Downloads an empty sheet with the right headings; Excel opens .csv files directly.
 const downloadTemplate = () => saveFile(new Blob([`﻿${TEMPLATE_HEADERS.join(",")}\r\n`], { type: "text/csv" }), "rise-academy-students.csv");
 
-async function readRows(file: File): Promise<Cell[][]> {
-  if (file.name.toLowerCase().endsWith(".csv")) return parseCsv(await file.text());
-  const { readSheet } = await import("read-excel-file/universal"); // downloaded only when someone imports
-  return readSheet(file);
+// Every sheet of a workbook (registers are often kept one sheet per class); a CSV file is a single sheet.
+async function readSheets(file: File): Promise<Sheet[]> {
+  if (file.name.toLowerCase().endsWith(".csv")) return [{ data: parseCsv(await file.text()) }];
+  const { default: readExcelFile } = await import("read-excel-file/universal"); // downloaded only when someone imports
+  return readExcelFile(file);
 }
 
 export function ImportForm({
@@ -42,7 +43,7 @@ export function ImportForm({
     setError("");
     if (!file) return;
     try {
-      setPlan(planImport(await readRows(file), existing));
+      setPlan(planImport(await readSheets(file), existing));
     } catch {
       setError("Could not read this file. Save it from Excel as .xlsx or .csv and try again.");
     }
@@ -97,7 +98,9 @@ export function ImportForm({
               <p>{rows(plan.errors.length)} can&apos;t be imported. Fix them in the sheet and upload it again, or import the rest now:</p>
               <ul className="mt-1 max-h-40 list-disc overflow-y-auto pl-5">
                 {plan.errors.map((e) => (
-                  <li key={e.row}>Row {e.row}: {e.message}</li>
+                  <li key={`${e.sheet}-${e.row}`}>
+                    {e.sheet ? `${e.sheet}, row` : "Row"} {e.row}: {e.message}
+                  </li>
                 ))}
               </ul>
             </div>

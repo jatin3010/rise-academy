@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import MagicBento from "@/components/MagicBento";
 import ScrollExpand from "@/components/ScrollExpand";
@@ -774,23 +774,33 @@ function FeeLine({ e, st }: { e: Enrollment; st: FeeStatus }) {
   );
 }
 
+// The browser's own modal dialog: focus moves in and stays inside, the page behind can't be reached, Escape closes it,
+// and focus goes back to the button that opened it. data-lenis-prevent lets the form scroll, not the page behind.
 function Modal({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  // A layout effect, so close() runs before React removes the dialog: that is when the browser restores focus.
+  useLayoutEffect(() => {
+    const dialog = ref.current!;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
   return (
-    // data-lenis-prevent lets the form scroll on its own instead of the page's smooth scrolling taking the wheel.
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in duration-200"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={ref}
       aria-label={title}
       data-lenis-prevent
-      onKeyDown={(e) => e.key === "Escape" && onClose()}
+      onCancel={(e) => {
+        e.preventDefault(); // React closes it by removing it, so the form's state goes with it
+        onClose();
+      }}
+      className="m-auto w-full max-w-lg overflow-visible border-0 bg-transparent p-4 text-foreground backdrop:bg-black/60 backdrop:backdrop-blur-sm"
     >
       <Card
-        className={`max-h-[90vh] w-full max-w-lg gap-4 overflow-y-auto rounded-[20px] bg-neutral-950/85 p-6 ring-white/15 backdrop-blur-xl motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2 duration-300`}
+        className={`max-h-[90vh] gap-4 overflow-y-auto rounded-[20px] bg-neutral-950/85 p-6 ring-white/15 backdrop-blur-xl motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-2 duration-300`}
       >
         <h2 className="text-lg font-semibold">{title}</h2>
         {children}
       </Card>
-    </div>
+    </dialog>
   );
 }

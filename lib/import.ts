@@ -1,12 +1,13 @@
-// Turns rows from an uploaded Excel/CSV sheet into students and courses for the CRM, with a reason for every row it
-// cannot use. Pure functions (no browser or database), tested in import.test.mjs.
+// Turns the rows of an uploaded Excel workbook or CSV file into students and courses for the CRM, with a reason for
+// every row it cannot use. Pure functions (no browser or database), tested in import.test.mjs.
 import { COURSES } from "./courses.ts";
 import { localToday, normalizePhone, studentKey as key, type EnrollmentValues, type Student, type StudentValues } from "./fees.ts";
 
 export type Cell = string | number | boolean | Date | null | undefined;
+export type Sheet = { sheet?: string; data: Cell[][] }; // a CSV file is one sheet without a name
 export type ImportPlan = {
   students: { student: StudentValues & { id: string }; enrollments: (EnrollmentValues & { student_id: string })[] }[];
-  errors: { row: number; message: string }[];
+  errors: { sheet?: string; row: number; message: string }[];
   skipped: number; // rows for students already in the CRM
 };
 
@@ -48,75 +49,82 @@ export function parseDate(cell: Cell): string | null {
   return date.getMonth() === m - 1 && date.getDate() === d ? localToday(date) : null;
 }
 
-export function planImport(rows: Cell[][], existing: Pick<Student, "name" | "phone">[]): ImportPlan {
+// Reads a whole workbook: every sheet with its own headings (one sheet per class or batch is common). Empty sheets, like
+// Excel's spare "Sheet2", are left out; a sheet without the needed headings is reported and the other sheets still import.
+export function planImport(sheets: Sheet[], existing: Pick<Student, "name" | "phone">[]): ImportPlan {
   const plan: ImportPlan = { students: [], errors: [], skipped: 0 };
-  const header = (rows[0] ?? []).map((h) => text(h).toLowerCase().replace(/[^a-z]/g, ""));
-  const col = Object.fromEntries(
-    Object.entries(COLUMNS).map(([field, names]) => [field, header.findIndex((h) => (names as readonly string[]).includes(h))]),
-  ) as Record<keyof typeof COLUMNS, number>;
-  const missing = Object.entries(REQUIRED).filter(([field]) => col[field as keyof typeof COLUMNS] < 0);
-  if (missing.length) {
-    plan.errors.push({ row: 1, message: `Missing column: ${missing.map(([, heading]) => heading).join(", ")}. Use the template's headings.` });
-    return plan;
-  }
-
   const known = new Set(existing.map((s) => key(s.name, s.phone)));
   const byStudent = new Map<string, ImportPlan["students"][number]>();
   const today = localToday();
+  const used = sheets.filter(({ data }) => data.some((row) => row.some((cell) => text(cell) !== "")));
 
-  rows.slice(1).forEach((row, i) => {
-    const rowNo = i + 2; // as Excel numbers rows: the heading is row 1
-    const get = (field: keyof typeof COLUMNS) => (col[field] >= 0 ? row[col[field]] : null);
-    if (row.every((cell) => text(cell) === "")) return;
-    const fail = (message: string) => plan.errors.push({ row: rowNo, message });
-
-    const name = text(get("name"));
-    const phone = text(get("phone"));
-    if (!name) return fail("Name is empty.");
-    if (!normalizePhone(phone)) return fail(`"${phone || "(empty)"}" is not a valid 10-digit Indian mobile number.`);
-    if (known.has(key(name, phone))) return void plan.skipped++;
-
-    const courseName = text(get("course")).toLowerCase();
-    const group = COURSES.find((g) => g.items.some((item) => item.toLowerCase() === courseName));
-    const course = group?.items.find((item) => item.toLowerCase() === courseName);
-    if (!group || !course) return fail(`Unknown course "${text(get("course"))}". Use a course name exactly as listed.`);
-
-    const typeText = text(get("feeType")).toLowerCase();
-    const fee_type = /month/.test(typeText) ? "monthly" : /course|one|total|instal|install/.test(typeText) ? "course" : group.feeType;
-    if (!text(get("fee"))) return fail("Fee amount is empty."); // a blank cell would otherwise read as a ₹0 (free) course
-    const fee_amount = Number(text(get("fee")).replace(/[₹,\s]|rs\.?/gi, ""));
-    if (!Number.isInteger(fee_amount) || fee_amount < 0) return fail(`Fee amount "${text(get("fee"))}" must be a whole number of rupees.`);
-
-    const dueText = text(get("dueDay"));
-    const due_day = fee_type === "monthly" ? (dueText ? Number(dueText) : 5) : null;
-    if (due_day !== null && !(Number.isInteger(due_day) && due_day >= 1 && due_day <= 28)) return fail(`Due day "${dueText}" must be from 1 to 28.`);
-    const nextDueCell = get("nextDue");
-    const next_due_on = fee_type === "course" && text(nextDueCell) ? parseDate(nextDueCell) : null;
-    if (fee_type === "course" && text(nextDueCell) && !next_due_on) return fail(`Next due date "${text(nextDueCell)}" is not a date (use DD/MM/YYYY).`);
-    const startCell = get("start");
-    const started_on = text(startCell) ? parseDate(startCell) : today;
-    if (!started_on) return fail(`Start date "${text(startCell)}" is not a date (use DD/MM/YYYY).`);
-
-    // Several rows for the same student (same name and phone) become one student with several courses.
-    const k = key(name, phone);
-    let entry = byStudent.get(k);
-    if (!entry) {
-      entry = {
-        student: {
-          id: crypto.randomUUID(),
-          name,
-          phone,
-          guardian_name: text(get("parent")) || null,
-          class_level: text(get("class")) || null,
-          notes: text(get("notes")) || null,
-        },
-        enrollments: [],
-      };
-      byStudent.set(k, entry);
-      plan.students.push(entry);
+  for (const { sheet, data } of used) {
+    const where = used.length > 1 && sheet ? { sheet } : {}; // problems name the sheet when there are several
+    const header = (data[0] ?? []).map((h) => text(h).toLowerCase().replace(/[^a-z]/g, ""));
+    const col = Object.fromEntries(
+      Object.entries(COLUMNS).map(([field, names]) => [field, header.findIndex((h) => (names as readonly string[]).includes(h))]),
+    ) as Record<keyof typeof COLUMNS, number>;
+    const missing = Object.entries(REQUIRED).filter(([field]) => col[field as keyof typeof COLUMNS] < 0);
+    if (missing.length) {
+      plan.errors.push({ ...where, row: 1, message: `Missing column: ${missing.map(([, heading]) => heading).join(", ")}. Use the template's headings.` });
+      continue;
     }
-    entry.enrollments.push({ student_id: entry.student.id, category: group.title, course, fee_type, fee_amount, due_day, next_due_on, started_on });
-  });
+
+    data.slice(1).forEach((row, i) => {
+      const rowNo = i + 2; // as Excel numbers rows: the heading is row 1
+      const get = (field: keyof typeof COLUMNS) => (col[field] >= 0 ? row[col[field]] : null);
+      if (row.every((cell) => text(cell) === "")) return;
+      const fail = (message: string) => plan.errors.push({ ...where, row: rowNo, message });
+
+      const name = text(get("name"));
+      const phone = text(get("phone"));
+      if (!name) return fail("Name is empty.");
+      if (!normalizePhone(phone)) return fail(`"${phone || "(empty)"}" is not a valid 10-digit Indian mobile number.`);
+      if (known.has(key(name, phone))) return void plan.skipped++;
+
+      const courseName = text(get("course")).toLowerCase();
+      const group = COURSES.find((g) => g.items.some((item) => item.toLowerCase() === courseName));
+      const course = group?.items.find((item) => item.toLowerCase() === courseName);
+      if (!group || !course) return fail(`Unknown course "${text(get("course"))}". Use a course name exactly as listed.`);
+
+      const typeText = text(get("feeType")).toLowerCase();
+      const fee_type = /month/.test(typeText) ? "monthly" : /course|one|total|instal|install/.test(typeText) ? "course" : group.feeType;
+      if (!text(get("fee"))) return fail("Fee amount is empty."); // a blank cell would otherwise read as a ₹0 (free) course
+      const fee_amount = Number(text(get("fee")).replace(/[₹,\s]|rs\.?/gi, ""));
+      if (!Number.isInteger(fee_amount) || fee_amount < 0) return fail(`Fee amount "${text(get("fee"))}" must be a whole number of rupees.`);
+
+      const dueText = text(get("dueDay"));
+      const due_day = fee_type === "monthly" ? (dueText ? Number(dueText) : 5) : null;
+      if (due_day !== null && !(Number.isInteger(due_day) && due_day >= 1 && due_day <= 28)) return fail(`Due day "${dueText}" must be from 1 to 28.`);
+      const nextDueCell = get("nextDue");
+      const next_due_on = fee_type === "course" && text(nextDueCell) ? parseDate(nextDueCell) : null;
+      if (fee_type === "course" && text(nextDueCell) && !next_due_on) return fail(`Next due date "${text(nextDueCell)}" is not a date (use DD/MM/YYYY).`);
+      const startCell = get("start");
+      const started_on = text(startCell) ? parseDate(startCell) : today;
+      if (!started_on) return fail(`Start date "${text(startCell)}" is not a date (use DD/MM/YYYY).`);
+
+      // Several rows for the same student (same name and phone), on one sheet or several, become one student with
+      // several courses.
+      const k = key(name, phone);
+      let entry = byStudent.get(k);
+      if (!entry) {
+        entry = {
+          student: {
+            id: crypto.randomUUID(),
+            name,
+            phone,
+            guardian_name: text(get("parent")) || null,
+            class_level: text(get("class")) || null,
+            notes: text(get("notes")) || null,
+          },
+          enrollments: [],
+        };
+        byStudent.set(k, entry);
+        plan.students.push(entry);
+      }
+      entry.enrollments.push({ student_id: entry.student.id, category: group.title, course, fee_type, fee_amount, due_day, next_due_on, started_on });
+    });
+  }
   return plan;
 }
 
