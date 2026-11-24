@@ -10,8 +10,8 @@ export const WHATSAPP = "https://wa.me/917042481547";
 export const RATING = "4.9";
 export const REVIEW_COUNT = 1001;
 
-// Video reviews in public/reviews/: review-N.mp4 (compressed from the originals) and review-N.webp (a frame used as its
-// cover). Shown in "What students and parents say", in this order.
+// Video reviews in public/reviews/: review-N.mp4 (compressed from the originals), review-N.webp (a frame used as its
+// cover) and review-N.vtt (English captions; review 3 is spoken in Hindi, so its captions are a translation). Shown in "What students and parents say", in this order.
 export const REVIEW_VIDEOS = [1, 2, 3];
 
 export const YOUTUBE ="https://www.youtube.com/@Riseacademyenglish";
