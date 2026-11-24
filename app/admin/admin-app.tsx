@@ -27,7 +27,8 @@ import {
 import { GLASS_CARD } from "@/lib/styles";
 import { supabase } from "@/lib/supabase";
 import { EnrollmentForm, PaymentForm, StudentForm } from "./forms";
-import { ImportForm } from "./import";
+import { ImportForm, saveFile } from "./import";
+import { yearReport } from "@/lib/report";
 import "./bento.css";
 import { AdminLock, CourseHub, FeeBars, ImportSteps, StudentTrend, WelcomePreview } from "./bento-visuals";
 
@@ -172,6 +173,8 @@ function Dashboard({ email }: { email: string }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [dueOnly, setDueOnly] = useState(false);
+  const [reportYear, setReportYear] = useState(Number(today.slice(0, 4)));
+  const [exporting, setExporting] = useState(false);
 
   const [version, setVersion] = useState(0);
   const reload = () => setVersion((v) => v + 1);
@@ -215,6 +218,17 @@ function Dashboard({ email }: { email: string }) {
     await act(db.from("students").update({ active: false }).eq("id", s.id));
   }
 
+  async function downloadReport(all: Student[]) {
+    setExporting(true);
+    try {
+      const { default: writeExcelFile } = await import("write-excel-file/universal"); // downloaded only when someone exports
+      saveFile(await writeExcelFile(yearReport(all, reportYear, today)).toBlob(), `rise-academy-${reportYear}.xlsx`);
+    } catch (e) {
+      setError(`Could not create the Excel file: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    setExporting(false);
+  }
+
   if (!students) {
     return <Shell>{error ? <p className="text-red-400">{error}</p> : <p className="text-white/60">Loading students…</p>}</Shell>;
   }
@@ -234,6 +248,10 @@ function Dashboard({ email }: { email: string }) {
   const goTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   const months = monthlyTotals(students, nextMonths(today, 7, -6)); // the last 7 months, for the two charts
+  const [lastMonth, thisMonth] = months.slice(-2);
+  const year = Number(today.slice(0, 4));
+  const earnedThisYear = monthlyTotals(students, nextMonths(`${year}-01-01`, 12)).reduce((n, m) => n + m.collected, 0);
+  const reportYears = [...new Set([year, ...students.flatMap((s) => s.enrollments.flatMap((e) => e.payments.map((p) => Number(p.paid_on.slice(0, 4)))))])].sort((a, b) => b - a);
   const newest = [...active].sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
   const newestCourses = newest?.enrollments.filter((e) => e.active).map((e) => e.course) ?? [];
   // Six MagicBento cards with our own visuals, each opening the matching part of the CRM.
@@ -307,6 +325,48 @@ function Dashboard({ email }: { email: string }) {
             { id: "enrolments", content: <Stat label="Course enrolments" value={rows.length} /> },
             { id: "dueStudents", content: <Stat label="Students with fees due" value={overdueStudents} tone={overdueStudents ? "bad" : "good"} /> },
             { id: "overdue", content: <Stat label="Fees overdue" value={overdueTotal} format={rupees} tone={overdue.length ? "bad" : "good"} /> },
+          ]}
+        />
+      </section>
+
+      <section className="mt-3" aria-label="Earnings">
+        <MagicBento
+          rowHeight={136}
+          clickEffect={false}
+          items={[
+            {
+              id: "month",
+              content: <Stat label={`Earned in ${monthLabel(thisMonth.month)}`} value={thisMonth.collected} format={rupees} tone="good" note={`${monthLabel(lastMonth.month)}: ${rupees(lastMonth.collected)}`} />,
+            },
+            {
+              id: "year",
+              content: <Stat label={`Earned in ${year}`} value={earnedThisYear} format={rupees} tone="good" note={`Fees received, Jan to ${monthLabel(thisMonth.month)}`} />,
+            },
+            {
+              id: "report",
+              colSpan: 2,
+              content: (
+                <>
+                  <span className="text-sm text-white/60">Excel report</span>
+                  <p className="text-sm text-white/80">
+                    Every student with courses, fees and dues, every payment, and month-by-month totals for the year.
+                  </p>
+                  <div className="mt-auto flex flex-wrap items-center gap-2">
+                    <select
+                      className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+                      aria-label="Report year"
+                      value={reportYear}
+                      onChange={(e) => setReportYear(Number(e.target.value))}
+                    >
+                      {reportYears.map((y) => <option key={y}>{y}</option>)}
+                    </select>
+                    <Button size="sm" disabled={exporting} onClick={() => downloadReport(students)}>
+                      {exporting ? "Preparing…" : "Download Excel"}
+                    </Button>
+                  </div>
+                </>
+              ),
+            },
           ]}
         />
       </section>
@@ -597,7 +657,19 @@ function panelTitle(panel: NonNullable<Panel>) {
   }
 }
 
-function Stat({ label, value, format, tone }: { label: string; value: number; format?: (n: number) => string; tone?: "good" | "bad" }) {
+function Stat({
+  label,
+  value,
+  format,
+  tone,
+  note,
+}: {
+  label: string;
+  value: number;
+  format?: (n: number) => string;
+  tone?: "good" | "bad";
+  note?: string;
+}) {
   const color = tone === "bad" ? "text-red-400" : tone === "good" ? "text-emerald-400" : "";
   return (
     <>
@@ -605,6 +677,7 @@ function Stat({ label, value, format, tone }: { label: string; value: number; fo
       <span className={`mt-auto text-3xl font-semibold tabular-nums ${color}`}>
         <CountUp value={value} format={format} />
       </span>
+      {note && <span className="-mt-2 text-xs text-white/50">{note}</span>}
     </>
   );
 }

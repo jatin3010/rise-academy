@@ -6,15 +6,16 @@ import { COURSES } from "@/lib/courses";
 import type { Student } from "@/lib/fees";
 import { parseCsv, planImport, TEMPLATE_HEADERS, type Cell, type ImportPlan } from "@/lib/import";
 
-// Downloads an empty sheet with the right headings; Excel opens .csv files directly.
-function downloadTemplate() {
-  const url = URL.createObjectURL(new Blob([`﻿${TEMPLATE_HEADERS.join(",")}\r\n`], { type: "text/csv" }));
+export function saveFile(blob: Blob, name: string) {
   const link = document.createElement("a");
-  link.href = url;
-  link.download = "rise-academy-students.csv";
+  link.href = URL.createObjectURL(blob);
+  link.download = name;
   link.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(link.href), 10_000); // freeing it at once can cancel the download in Safari/Firefox
 }
+
+// Downloads an empty sheet with the right headings; Excel opens .csv files directly.
+const downloadTemplate = () => saveFile(new Blob([`﻿${TEMPLATE_HEADERS.join(",")}\r\n`], { type: "text/csv" }), "rise-academy-students.csv");
 
 async function readRows(file: File): Promise<Cell[][]> {
   if (file.name.toLowerCase().endsWith(".csv")) return parseCsv(await file.text());
