@@ -145,7 +145,11 @@ export function normalizePhone(raw: string): string | null {
   return null;
 }
 
-export const waLink = (phone: string, text: string) =>
+// One student = same name (any case, extra spaces) and same mobile number (however it was typed). Used by the add
+// form and the Excel import to spot students already in the CRM.
+export const studentKey = (name: string, phone: string) => `${name.trim().toLowerCase().replace(/\s+/g, " ")}|${normalizePhone(phone)}`;
+
+export const waLink =(phone: string, text: string) =>
   `https://wa.me/${normalizePhone(phone)}?text=${encodeURIComponent(text)}`;
 
 const SIGN_OFF = "\n\nTeam Rise Academy\nSector 110, Gurugram · 070424 81547";

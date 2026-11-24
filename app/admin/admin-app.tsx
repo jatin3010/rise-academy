@@ -19,6 +19,7 @@ import {
   nextMonths,
   reminderText,
   rupees,
+  studentKey,
   waLink,
   welcomeText,
   type Enrollment,
@@ -255,8 +256,11 @@ function Dashboard({ email }: { email: string }) {
   const overdue = all.filter((r) => r.st.overdue); // includes stopped courses: money owed from before they stopped
   const overdueStudents = new Set(overdue.map((r) => r.s.id)).size;
   const q = query.toLowerCase();
+  // Phone numbers match however they were typed: digits only, without a +91 or 0 in front (the last 10 digits).
+  const local = (phone: string) => phone.replace(/\D/g, "").replace(/^0+/, "").slice(-10);
+  const qPhone = local(query);
   const visible = students
-    .filter((s) => !q || `${s.name} ${s.phone} ${s.guardian_name ?? ""}`.toLowerCase().includes(q))
+    .filter((s) => !q || `${s.name} ${s.phone} ${s.guardian_name ?? ""}`.toLowerCase().includes(q) || (qPhone.length >= 4 && local(s.phone).includes(qPhone)))
     .filter((s) => !category || s.enrollments.some((e) => e.category === category))
     .filter((s) => !dueOnly || s.enrollments.some((e) => feeStatus(e, today).overdue))
     .sort((a, b) => Number(b.active) - Number(a.active));
@@ -592,6 +596,12 @@ function Dashboard({ email }: { email: string }) {
               onCancel={() => setPanel(null)}
               onSave={({ student, enrollment }) =>
                 save(async () => {
+                  // Same check as the Excel import, so one student never ends up with two cards and split payments.
+                  const twin = students.find((x) => studentKey(x.name, x.phone) === studentKey(student.name, student.phone));
+                  if (twin)
+                    return twin.active
+                      ? `${twin.name} (${twin.phone}) is already in the CRM. Search for them to add a course.`
+                      : `${twin.name} (${twin.phone}) is already in the CRM, marked as left. Use “Re-join” on their card.`;
                   const { data, error } = await db.from("students").insert(student).select("id").single();
                   if (error) return error.message;
                   if (enrollment) {

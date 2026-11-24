@@ -246,7 +246,7 @@ export default function Home() {
               <VideoReviews
                 videos={REVIEW_VIDEOS.map((n) => ({
                   src: asset(`reviews/review-${n}.mp4`),
-                  poster: asset(`reviews/review-${n}.jpg`),
+                  poster: asset(`reviews/review-${n}.webp`),
                   label: `Video review ${n} of ${REVIEW_VIDEOS.length} from a Rise Academy student or parent`,
                 }))}
               />

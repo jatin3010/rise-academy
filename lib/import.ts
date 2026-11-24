@@ -1,7 +1,7 @@
 // Turns rows from an uploaded Excel/CSV sheet into students and courses for the CRM, with a reason for every row it
 // cannot use. Pure functions (no browser or database), tested in import.test.mjs.
 import { COURSES } from "./courses.ts";
-import { localToday, normalizePhone, type EnrollmentValues, type Student, type StudentValues } from "./fees.ts";
+import { localToday, normalizePhone, studentKey as key, type EnrollmentValues, type Student, type StudentValues } from "./fees.ts";
 
 export type Cell = string | number | boolean | Date | null | undefined;
 export type ImportPlan = {
@@ -28,7 +28,6 @@ const COLUMNS = {
 } as const;
 const REQUIRED = { name: "Name", phone: "Phone", course: "Course", fee: "Fee amount" } as const; // field → template heading
 
-const key = (name: string, phone: string) => `${name.trim().toLowerCase()}|${normalizePhone(phone)}`;
 // Excel dates have no time zone; the reader gives them as UTC midnight, so read the UTC day (correct in any time zone).
 const utcDay = (d: Date) => d.toISOString().slice(0, 10);
 const text = (cell: Cell) => (cell instanceof Date ? utcDay(cell) : String(cell ?? "")).trim();
