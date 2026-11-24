@@ -15,6 +15,23 @@ export const REVIEW_COUNT = 1001;
 export const REVIEW_VIDEOS = [1, 2, 3];
 
 export const YOUTUBE ="https://www.youtube.com/@Riseacademyenglish";
+
+// The academy's Instagram profile as the app showed it on 25 Nov 2026. The numbers and bio don't update themselves:
+// copy them from the app now and then. public/instagram/ holds the profile photo (profile.webp) and the first four
+// story highlight covers (highlight-1…4.webp, in the order below), cut from a screenshot of the profile.
+export const INSTAGRAM = {
+  handle: "riseacademyenglish",
+  url: "https://www.instagram.com/riseacademyenglish/",
+  name: "Rise Academy",
+  category: "Education",
+  bio: ["🎓 Educator | Entrepreneur", "🚀 Founder — Rise Academy", "🌱 Founder — UniKids School", "🏆 8.5 IELTS | 🎓 Delhi University Alumni"],
+  stats: [
+    [277, "posts"],
+    [994, "followers"],
+    [324, "following"],
+  ] as const,
+  highlights: ["New Joiners", "Be Fit", "Family", "Faculties"],
+};
 // Real class videos from Rise Academy's YouTube only: the video id (the 11 characters after "watch?v=", "youtu.be/" or
 // "shorts/" in its link) and a short title. The first is shown large. The "Inside our classes" section and its menu
 // link stay hidden while empty.

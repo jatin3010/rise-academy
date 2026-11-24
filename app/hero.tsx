@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import type { FormEvent } from "react";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import PillNav from "@/components/PillNav";
 import { asset, RATING, REVIEW_COUNT, VIDEOS, WHATSAPP } from "@/lib/site";
 import { CTA, GLASS } from "@/lib/styles";
 import logo from "./logo.jpeg";
@@ -12,13 +12,23 @@ import logo from "./logo.jpeg";
 const ENTER =
   "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-7 duration-900 ease-[cubic-bezier(0.16,1,0.3,1)] fill-mode-both";
 
-const LINKS = [
-  ["Courses", "#courses"],
-  ["Why Rise", "#why"],
-  ...(VIDEOS.length ? [["Classes", "#classes"]] : []),
-  ["Reviews", "#reviews"],
-  ["Contact", "#contact"],
-];
+// The menu (React Bits PillNav). It comes twice, one per screen size, so the right one shows from the first paint:
+// PillNav measures the screen only once the page's JavaScript runs, and until then phones got the whole row of links.
+const MENU = {
+  logo: <Image src={logo} alt="" width={34} height={34} unoptimized className="rounded-full" />,
+  logoAlt: "Rise Academy, back to top",
+  logoHref: "#top",
+  items: [
+    { label: "Courses", href: "#courses" },
+    { label: "Why Rise", href: "#why" },
+    ...(VIDEOS.length ? [{ label: "Classes", href: "#classes" }] : []),
+    { label: "Reviews", href: "#reviews" },
+    { label: "Contact", href: "#contact" },
+  ],
+  activeHref: "", // one page with the menu at its top, so no link is marked as the current page
+  intro: false, // its pop-in would replay over the menu already showing before the JavaScript loaded
+  style: { "--pn-mark": "34px" }, // the logo fills most of its round bubble
+};
 
 // Opens WhatsApp with the visitor's number pre-filled, so the academy can call them back.
 function requestCallback(e: FormEvent<HTMLFormElement>) {
@@ -29,99 +39,28 @@ function requestCallback(e: FormEvent<HTMLFormElement>) {
 }
 
 export default function Hero() {
-  const [open, setOpen] = useState(false);
-
-  // Lock page scroll only below md, so it can't stay stuck if the screen widens while the menu is open.
-  useEffect(() => {
-    document.body.classList.toggle("max-md:overflow-hidden", open);
-    return () => document.body.classList.remove("max-md:overflow-hidden");
-  }, [open]);
-
   return (
     <section className="relative flex min-h-svh w-full flex-col overflow-hidden">
       <video src={asset("hero.mp4")} poster={asset("hero.jpg")} autoPlay loop muted playsInline aria-hidden className="absolute inset-0 h-full w-full object-cover" />
 
       <div className="relative z-10 flex flex-1 flex-col">
-        <nav className="flex items-center justify-between gap-4 px-5 py-5 sm:px-8 sm:py-6 lg:px-12">
-          <a href="#top" className="flex items-center gap-2">
-            <Image src={logo} alt="" width={36} height={36} unoptimized priority className="h-9 w-9 rounded-full object-cover" />
-            <span className="whitespace-nowrap text-lg font-semibold text-[#010101] lg:text-white">Rise Academy</span>
+        <header className="flex items-center gap-3 px-5 py-5 sm:px-8 sm:py-6 lg:px-12">
+          {/* Each copy fills the space left of "Enroll now": phones fold the links into its menu button. */}
+          <div className="min-w-0 flex-1 md:hidden">
+            <PillNav {...MENU} collapse="always" />
+          </div>
+          <div className="hidden min-w-0 flex-1 md:flex">
+            <PillNav {...MENU} collapse="never" />
+          </div>
+          <a
+            href={WHATSAPP}
+            target="_blank"
+            rel="noopener"
+            className={`flex items-center self-stretch whitespace-nowrap rounded-full px-5 text-sm font-medium text-white ${CTA}`}
+          >
+            Enroll now
           </a>
-
-          <div className="hidden gap-3 md:flex">
-            {/* Darker glass than the spec's white/10: on tablets the links sit over the bright mist and vanished. */}
-            <div className="flex gap-1 rounded-full bg-black/20 px-1.5 py-1.5 backdrop-blur-lg">
-              {LINKS.map(([label, href]) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white lg:px-4"
-                >
-                  {label}
-                </a>
-              ))}
-            </div>
-            <a
-              href={WHATSAPP}
-              target="_blank"
-              rel="noopener"
-              className={`flex items-center self-stretch whitespace-nowrap rounded-full px-5 text-sm font-medium text-white ${CTA}`}
-            >
-              Enroll now
-            </a>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            // White while open: the dark drawer sits behind the button.
-            className={`relative z-50 grid h-10 w-10 place-items-center rounded-full bg-white/10 backdrop-blur-lg md:hidden ${open ? "text-white" : "text-[#010101] lg:text-white"}`}
-          >
-            <Menu className={`col-start-1 row-start-1 h-5 w-5 transition-all duration-300 ${open ? "rotate-90 scale-0 opacity-0" : ""}`} aria-hidden />
-            <X className={`col-start-1 row-start-1 h-5 w-5 transition-all duration-300 ${open ? "" : "-rotate-90 scale-0 opacity-0"}`} aria-hidden />
-          </button>
-        </nav>
-
-        <div
-          onClick={() => setOpen(false)}
-          aria-hidden
-          className={`fixed inset-0 z-40 bg-black/80 backdrop-blur-md transition-opacity duration-300 md:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
-        />
-        <div
-          id="mobile-menu"
-          inert={!open}
-          className={`fixed top-0 right-0 z-40 flex h-full w-72 flex-col bg-black/90 backdrop-blur-xl transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:hidden ${open ? "translate-x-0" : "translate-x-full"}`}
-        >
-          <div className="flex flex-col gap-2 px-6 pt-24">
-            {LINKS.map(([label, href], i) => (
-              <a
-                key={label}
-                href={href}
-                onClick={() => setOpen(false)}
-                style={{ transitionDelay: open ? `${(i + 1) * 60}ms` : "0ms" }}
-                className={`rounded-xl px-4 py-3.5 text-base font-medium text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white ${open ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"}`}
-              >
-                {label}
-              </a>
-            ))}
-          </div>
-          <div
-            style={{ transitionDelay: open ? "300ms" : "0ms" }}
-            className={`mt-auto px-6 pb-10 transition-all duration-[400ms] ${open ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
-          >
-            <a
-              href={WHATSAPP}
-              target="_blank"
-              rel="noopener"
-              className={`block w-full rounded-full py-3 text-center text-sm font-medium text-white ${CTA}`}
-            >
-              Enroll now
-            </a>
-          </div>
-        </div>
+        </header>
 
         <div className="mt-auto flex flex-col gap-6 px-5 pb-8 sm:gap-8 sm:px-8 sm:pb-12 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:pb-16">
           <div className="max-w-xl">
