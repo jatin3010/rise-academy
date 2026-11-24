@@ -7,6 +7,11 @@ import { asset, RATING, REVIEW_COUNT, VIDEOS, WHATSAPP } from "@/lib/site";
 import { CTA, GLASS } from "@/lib/styles";
 import logo from "./logo.jpeg";
 
+// The heading and the call-back form rise in with CSS, which starts at the first paint. With anime.js they had to wait
+// for all the page's JavaScript: 2+ extra seconds of an empty hero on slow phones. The two cards use anime.js (Motion.tsx).
+const ENTER =
+  "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-7 duration-900 ease-[cubic-bezier(0.16,1,0.3,1)] fill-mode-both";
+
 const LINKS = [
   ["Courses", "#courses"],
   ["Why Rise", "#why"],
@@ -120,7 +125,7 @@ export default function Hero() {
 
         <div className="mt-auto flex flex-col gap-6 px-5 pb-8 sm:gap-8 sm:px-8 sm:pb-12 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:pb-16">
           <div className="max-w-xl">
-            <h1 data-hero className="text-3xl font-semibold leading-[1.1] tracking-tight text-[#010101] sm:text-4xl lg:text-[3.5rem] lg:text-white">
+            <h1 className={`text-3xl font-semibold leading-[1.1] tracking-tight text-[#010101] sm:text-4xl lg:text-[3.5rem] lg:text-white ${ENTER} delay-150`}>
               {/* Says who and where in the main heading, for search and AI answers; the tagline stays the visual headline. */}
               <span className="mb-3 block text-sm font-medium tracking-normal opacity-70">
                 Rise Academy · Coaching in Sector 110, Gurugram
@@ -128,9 +133,8 @@ export default function Hero() {
               Strong foundations today. Successful futures tomorrow.
             </h1>
             <form
-              data-hero
               onSubmit={requestCallback}
-              className="mt-6 flex flex-col gap-3 sm:mt-8 sm:inline-flex sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:bg-white sm:p-1.5"
+              className={`mt-6 flex flex-col gap-3 sm:mt-8 sm:inline-flex sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:bg-white sm:p-1.5 ${ENTER} delay-240`}
             >
               <input
                 type="tel"

@@ -668,10 +668,15 @@ function Dashboard({ email }: { email: string }) {
                   const { error: e2 } = await db.from("enrollments").insert(plan.flatMap((p) => p.enrollments));
                   if (e2) {
                     // Remove the students again so the same sheet can simply be uploaded once more (they'd be skipped as duplicates).
-                    const { error: e3 } = await db.from("students").delete().in("id", plan.map((p) => p.student.id));
-                    return e3
-                      ? `The students were saved but their courses were not (${e2.message}). Add their courses with “Add course”, or delete those students and upload the sheet again.`
-                      : `Nothing was imported: ${e2.message}`;
+                    // 100 at a time: the ids go in the web address, and Supabase refuses addresses over 16 KB (about 400 ids).
+                    let undone = true;
+                    for (let i = 0; undone && i < plan.length; i += 100) {
+                      const { error: e3 } = await db.from("students").delete().in("id", plan.slice(i, i + 100).map((p) => p.student.id));
+                      undone = !e3;
+                    }
+                    return undone
+                      ? `Nothing was imported: ${e2.message}`
+                      : `Some students were saved without their courses (${e2.message}). Add their courses with “Add course”, or delete those students and upload the sheet again.`;
                   }
                   setNotice(`Imported ${plan.length} students with ${plan.reduce((n, p) => n + p.enrollments.length, 0)} courses.`);
                   return null;

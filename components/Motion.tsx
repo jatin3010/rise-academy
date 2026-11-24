@@ -3,8 +3,8 @@
 import { useEffect } from "react";
 import { animate, stagger } from "animejs";
 
-// Entrance animations for the home page, with anime.js. The hero ([data-hero]) rises in on load and its review count
-// counts up ([data-count]); each [data-reveal] container's children rise in, one after another, when it scrolls into
+// Entrance animations for the home page, with anime.js. The hero's two cards ([data-hero]) rise in on load (its heading
+// and form use CSS, see hero.tsx) and the review count counts up ([data-count]); each [data-reveal] container's children rise in, one after another, when it scrolls into
 // view (containers can nest: a section's heading and text, then the cards in its grid). Elements start hidden only while <html> has
 // "will-animate", which layout.tsx sets before the first paint when JavaScript runs and motion is allowed; without it
 // (reduced motion, no JavaScript, or the 4-second safety in layout.tsx), everything simply shows.
@@ -27,6 +27,7 @@ export default function Motion() {
     for (const el of document.querySelectorAll<HTMLElement>("[data-count]")) {
       const target = Number(el.dataset.count);
       const counter = { n: 0 };
+      el.textContent = "0+"; // now, while the card is still hidden: it starts fading in before the count begins
       animate(counter, {
         n: target,
         duration: 1800,
