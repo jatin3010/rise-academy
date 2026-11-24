@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
-import { RATING, REVIEW_COUNT, WHATSAPP } from "@/lib/site";
+import { asset, RATING, REVIEW_COUNT, WHATSAPP } from "@/lib/site";
 import { CTA, GLASS } from "@/lib/styles";
 import logo from "./logo.jpeg";
 
@@ -33,8 +33,7 @@ export default function Hero() {
 
   return (
     <section className="relative flex min-h-svh w-full flex-col overflow-hidden">
-      {/* shortcut: relative paths resolve under the GitHub Pages base path only on the home page; use the base path if Hero moves to a nested route. */}
-      <video src="hero.mp4" poster="hero.jpg" autoPlay loop muted playsInline aria-hidden className="absolute inset-0 h-full w-full object-cover" />
+      <video src={asset("hero.mp4")} poster={asset("hero.jpg")} autoPlay loop muted playsInline aria-hidden className="absolute inset-0 h-full w-full object-cover" />
 
       <div className="relative z-10 flex flex-1 flex-col">
         <nav className="flex items-center justify-between px-5 py-5 sm:px-8 sm:py-6 lg:px-12">

@@ -113,6 +113,19 @@ export function feeStatus(e: Enrollment, today: string): FeeStatus {
   return { balance, overdue, unpaidMonths: [], paid };
 }
 
+// A new monthly fee starts after the last month already charged or paid for (paid in advance included); those
+// months keep the old fee. Returns the update that ends the current course and the new course to add.
+export function changeMonthlyFee(e: Enrollment, values: EnrollmentValues, today: string) {
+  const last = [`${today.slice(0, 7)}-01`, ...e.payments.map((p) => p.for_month ?? "")].sort().at(-1)!;
+  const [y, m] = last.split("-").map(Number);
+  const [next] = nextMonths(last, 1, 1);
+  return {
+    end: { active: false, ended_on: localToday(new Date(y, m, 0)) }, // last day of that month
+    // Starting on the due day makes the first new month owed from its due day, like every other month.
+    add: { ...values, started_on: `${next.slice(0, 8)}${String(values.due_day ?? 1).padStart(2, "0")}` },
+  };
+}
+
 // WhatsApp wants the full international number without '+'. Accepts how numbers are usually typed in India.
 export function normalizePhone(raw: string): string | null {
   const digits = raw.replace(/\D/g, "");
@@ -128,7 +141,8 @@ export const waLink = (phone: string, text: string) =>
 const SIGN_OFF = "\n\nTeam Rise Academy\nSector 110, Gurugram · 070424 81547";
 
 export function welcomeText(s: Pick<Student, "name">, courses: string[]) {
-  return `Namaste ${s.name}! 🙏\n\nWelcome to Rise Academy. You are now enrolled in ${courses.join(", ")}. We are happy to have you with us.\n\nFor any question, call or WhatsApp us on this number.${SIGN_OFF}`;
+  const enrolled = courses.length ? ` You are now enrolled in ${courses.join(", ")}.` : "";
+  return `Namaste ${s.name}! 🙏\n\nWelcome to Rise Academy.${enrolled} We are happy to have you with us.\n\nFor any question, call or WhatsApp us on this number.${SIGN_OFF}`;
 }
 
 export function reminderText(s: Pick<Student, "name">, e: Enrollment, status: FeeStatus) {

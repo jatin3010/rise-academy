@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { COURSES } from "@/lib/courses";
 import {
+  changeMonthlyFee,
   dateLabel,
   feeStatus,
   localToday,
@@ -25,6 +26,7 @@ import {
   type Student,
 } from "@/lib/fees";
 import { GLASS_CARD } from "@/lib/styles";
+import { asset } from "@/lib/site";
 import { supabase } from "@/lib/supabase";
 import { EnrollmentForm, PaymentForm, StudentForm } from "./forms";
 import { ImportForm, saveFile } from "./import";
@@ -121,11 +123,10 @@ function Login({ onEnter }: { onEnter: (entering: boolean) => void }) {
 
   return (
     <main className="relative h-svh w-full overflow-hidden">
-      {/* shortcut: relative media URLs, same limit as in layout.tsx */}
       <ScrollExpand
         mediaType="video"
-        src="hero.mp4"
-        poster="hero.jpg"
+        src={asset("hero.mp4")}
+        poster={asset("hero.jpg")}
         progress={open ? 1 : 0}
         startWidth={narrow ? 92 : 52}
         startHeight={narrow ? 78 : 70}
@@ -173,23 +174,33 @@ function Dashboard({ email }: { email: string }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [dueOnly, setDueOnly] = useState(false);
+  const [shown, setShown] = useState(50); // student cards drawn at once; drawing hundreds makes typing in search lag
   const [reportYear, setReportYear] = useState(Number(today.slice(0, 4)));
   const [exporting, setExporting] = useState(false);
 
   const [version, setVersion] = useState(0);
   const reload = () => setVersion((v) => v + 1);
 
-  // shortcut: loads every student with all fees and payments at once; fine for a few thousand students, page it beyond that.
+  // shortcut: keeps every student with all fees and payments in memory; fine for a few thousand students.
+  // Supabase sends at most "Max rows" (1,000 by default) per request, so read page by page until one comes back empty.
   useEffect(() => {
     let current = true;
-    db.from("students")
-      .select("*, enrollments(*, payments(*))")
-      .order("name")
-      .then(({ data, error }) => {
+    (async () => {
+      const all: Student[] = [];
+      for (let from = 0; ; ) {
+        const { data, error } = await db
+          .from("students")
+          .select("*, enrollments(*, payments(*))")
+          .order("name")
+          .order("id") // same order on every page, even for students with the same name
+          .range(from, from + 999);
         if (!current) return;
-        if (error) setError(error.message);
-        else setStudents(data as Student[]);
-      });
+        if (error) return setError(error.message);
+        if (!data.length) return setStudents(all);
+        all.push(...(data as Student[]));
+        from += data.length;
+      }
+    })();
     return () => {
       current = false;
     };
@@ -269,7 +280,7 @@ function Dashboard({ email }: { email: string }) {
       visual: (
         <WelcomePreview
           name={newest?.name ?? "New student"}
-          text={welcomeText({ name: newest?.name ?? "New student" }, newestCourses.length ? newestCourses : ["their course"])}
+          text={welcomeText({ name: newest?.name ?? "New student" }, newestCourses)}
         />
       ),
       colSpan: 2, rowSpan: 2, title: "Welcome New Students", description: "Add a student, then send their welcome message on WhatsApp in one tap.", run: () => setPanel({ kind: "addStudent" }) },
@@ -447,7 +458,7 @@ function Dashboard({ email }: { email: string }) {
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={dueOnly} onChange={(e) => setDueOnly(e.target.checked)} /> Fees due only
           </label>
-          <span className="text-sm text-white/50">{visible.length} shown</span>
+          <span className="text-sm text-white/50">{visible.length} found</span>
         </div>
 
         {students.length === 0 && (
@@ -458,7 +469,7 @@ function Dashboard({ email }: { email: string }) {
         )}
 
         <ul className="mt-4 grid gap-3">
-          {visible.map((s, i) => (
+          {visible.slice(0, shown).map((s, i) => (
             <li key={s.id} className={rise} style={stagger(i)}>
               <Card className={`crm-card gap-3 p-4 ${s.active ? "" : "opacity-60"}`}>
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -491,13 +502,16 @@ function Dashboard({ email }: { email: string }) {
                         Re-join
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => confirm(`Delete ${s.name} and all their fee records? This cannot be undone.`) && act(db.from("students").delete().eq("id", s.id))}
-                    >
-                      Delete
-                    </Button>
+                    {/* Only students with no payments: deleting payments would change past earnings and reports. */}
+                    {s.enrollments.every((e) => e.payments.length === 0) && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => confirm(`Delete ${s.name}? This cannot be undone.`) && act(db.from("students").delete().eq("id", s.id))}
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -511,7 +525,7 @@ function Dashboard({ email }: { email: string }) {
                         <span className="text-white/60">
                           · {e.fee_type === "monthly" ? `${rupees(e.fee_amount)}/month, due by day ${e.due_day}` : `${rupees(e.fee_amount)} course, paid ${rupees(st.paid)}`}
                         </span>
-                        {e.ended_on && <span className="text-white/60">· stopped {dateLabel(e.ended_on)}</span>}
+                        {e.ended_on && <span className="text-white/60">· {e.ended_on > today ? "ends" : "stopped"} {dateLabel(e.ended_on)}</span>}
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-1.5 text-sm">
                         <FeeLine e={e} st={st} />
@@ -559,6 +573,11 @@ function Dashboard({ email }: { email: string }) {
             </li>
           ))}
         </ul>
+        {visible.length > shown && (
+          <Button variant="outline" className="mt-4" onClick={() => setShown((n) => n + 50)}>
+            Show 50 more ({visible.length - shown} not shown)
+          </Button>
+        )}
       </section>
 
       {panel && (
@@ -590,7 +609,7 @@ function Dashboard({ email }: { email: string }) {
           {panel.kind === "addCourse" && (
             <EnrollmentForm
               onCancel={() => setPanel(null)}
-              onSave={(values) =>
+              onSave={({ values }) =>
                 save(async () => (await db.from("enrollments").insert({ ...values, student_id: panel.student.id })).error?.message ?? null)
               }
             />
@@ -599,7 +618,20 @@ function Dashboard({ email }: { email: string }) {
             <EnrollmentForm
               enrollment={panel.enrollment}
               onCancel={() => setPanel(null)}
-              onSave={(values) => save(async () => (await db.from("enrollments").update(values).eq("id", panel.enrollment.id)).error?.message ?? null)}
+              onSave={({ values, fromNextMonth }) =>
+                save(async () => {
+                  const e = panel.enrollment;
+                  if (fromNextMonth && values.fee_type === "monthly" && values.fee_amount !== e.fee_amount) {
+                    // Ending the old fee first: if adding the new one then fails, nobody is charged twice.
+                    const { end, add } = changeMonthlyFee(e, values, today);
+                    const { error } = await db.from("enrollments").update(end).eq("id", e.id);
+                    if (error) return error.message;
+                    const { error: e2 } = await db.from("enrollments").insert({ ...add, student_id: e.student_id });
+                    return e2 ? `The old fee now ends on ${dateLabel(end.ended_on)}, but the new fee was not saved: ${e2.message}. Use “Add course” to add it.` : null;
+                  }
+                  return (await db.from("enrollments").update(values).eq("id", e.id)).error?.message ?? null;
+                })
+              }
             />
           )}
           {panel.kind === "import" && (
@@ -614,8 +646,10 @@ function Dashboard({ email }: { email: string }) {
                   const { error: e2 } = await db.from("enrollments").insert(plan.flatMap((p) => p.enrollments));
                   if (e2) {
                     // Remove the students again so the same sheet can simply be uploaded once more (they'd be skipped as duplicates).
-                    await db.from("students").delete().in("id", plan.map((p) => p.student.id));
-                    return `Nothing was imported: ${e2.message}`;
+                    const { error: e3 } = await db.from("students").delete().in("id", plan.map((p) => p.student.id));
+                    return e3
+                      ? `The students were saved but their courses were not (${e2.message}). Add their courses with “Add course”, or delete those students and upload the sheet again.`
+                      : `Nothing was imported: ${e2.message}`;
                   }
                   setNotice(`Imported ${plan.length} students with ${plan.reduce((n, p) => n + p.enrollments.length, 0)} courses.`);
                   return null;

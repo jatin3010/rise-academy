@@ -188,13 +188,25 @@ export function EnrollmentForm({
   onCancel,
 }: {
   enrollment?: Enrollment;
-  onSave: Save<EnrollmentValues>;
+  onSave: Save<{ values: EnrollmentValues; fromNextMonth: boolean }>;
   onCancel: () => void;
 }) {
-  const { error, busy, onSubmit } = useSubmit(readEnrollment, onSave);
+  const { error, busy, onSubmit } = useSubmit((f) => {
+    const values = readEnrollment(f);
+    return typeof values === "string" ? values : { values, fromNextMonth: f.get("from_next_month") === "on" };
+  }, onSave);
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       <EnrollmentFields enrollment={enrollment} />
+      {enrollment?.fee_type === "monthly" && enrollment.payments.length > 0 && (
+        <label className="flex items-start gap-2 text-sm text-white/70">
+          <input type="checkbox" name="from_next_month" defaultChecked className="mt-1" />
+          <span>
+            If the monthly fee changes, charge it only from the next unpaid month; months already charged or paid keep the
+            old fee. Untick to correct a wrong fee for every month.
+          </span>
+        </label>
+      )}
       <Footer error={error} busy={busy} label={enrollment ? "Save changes" : "Add course"} onCancel={onCancel} />
     </form>
   );

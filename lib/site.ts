@@ -1,5 +1,8 @@
 // Public address of the site (canonical URL, share previews, structured data). Change here for a custom domain.
-export const SITE_URL = "https://jatin3010.github.io/rise-academy/";
+// A file in public/, under the GitHub Pages base path ("/rise-academy"; empty locally).
+export const asset = (file: string) => `${process.env.BASE_PATH}/${file}`;
+
+export const SITE_URL ="https://jatin3010.github.io/rise-academy/";
 export const PHONE = "+917042481547";
 export const PHONE_DISPLAY = "070424 81547";
 export const WHATSAPP = "https://wa.me/917042481547";

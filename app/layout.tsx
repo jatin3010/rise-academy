@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Silkscreen } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
-import { PHONE_DISPLAY, RATING, SITE_URL } from "@/lib/site";
+import { asset, PHONE_DISPLAY, RATING, SITE_URL } from "@/lib/site";
 import logo from "./logo.jpeg";
 
 const geist = Geist({ variable: "--font-sans", subsets: ["latin"] });
@@ -33,12 +33,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en-IN" className={`${geist.variable} ${silkscreen.variable} h-full motion-safe:scroll-smooth antialiased`}>
       <body className="min-h-full flex flex-col">
-        {/* Dimmed hero frame fixed behind every page, so glass panels have something to blur.
-            shortcut: relative URL resolves under the GitHub Pages base path for "/" and "/admin" only; use the base path for deeper routes. */}
+        {/* Dimmed hero frame fixed behind every page, so glass panels have something to blur. */}
         <div
           aria-hidden
           className="fixed inset-0 -z-10 bg-cover bg-center"
-          style={{ backgroundImage: "linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.7)), url(hero.jpg)" }}
+          style={{ backgroundImage: `linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.7)), url(${asset("hero.jpg")})` }}
         />
         <SmoothScroll />
         {children}
