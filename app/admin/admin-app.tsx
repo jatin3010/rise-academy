@@ -222,9 +222,14 @@ function Dashboard({ email }: { email: string }) {
     else reload();
   }
 
-  // Leaving stops every current course first, so no monthly fees build up after the student left.
+  // Leaving stops every current course first, so no monthly fees build up after the student left. That includes a course
+  // whose old fee was set to end later by a fee change.
   async function markLeft(s: Student) {
-    const { error } = await db.from("enrollments").update({ active: false, ended_on: today }).eq("student_id", s.id).eq("active", true);
+    const { error } = await db
+      .from("enrollments")
+      .update({ active: false, ended_on: today })
+      .eq("student_id", s.id)
+      .or(`active.eq.true,ended_on.gt.${today}`);
     if (error) return setError(error.message);
     await act(db.from("students").update({ active: false }).eq("id", s.id));
   }
@@ -621,9 +626,10 @@ function Dashboard({ email }: { email: string }) {
               onSave={({ values, fromNextMonth }) =>
                 save(async () => {
                   const e = panel.enrollment;
-                  if (fromNextMonth && values.fee_type === "monthly" && values.fee_amount !== e.fee_amount) {
+                  const split = fromNextMonth ? changeMonthlyFee(e, values, today) : null;
+                  if (split) {
                     // Ending the old fee first: if adding the new one then fails, nobody is charged twice.
-                    const { end, add } = changeMonthlyFee(e, values, today);
+                    const { end, add } = split;
                     const { error } = await db.from("enrollments").update(end).eq("id", e.id);
                     if (error) return error.message;
                     const { error: e2 } = await db.from("enrollments").insert({ ...add, student_id: e.student_id });

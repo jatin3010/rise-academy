@@ -4,9 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap";
 import TrueFocus from "@/components/TrueFocus";
+import YouTube from "@/components/YouTube";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { COURSES } from "@/lib/courses";
-import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, SITE_URL, WHATSAPP } from "@/lib/site";
+import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, SITE_URL, VIDEOS, WHATSAPP, YOUTUBE } from "@/lib/site";
 import { CTA, GLASS, GLASS_CARD } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 import Hero from "./hero";
@@ -66,7 +67,7 @@ const jsonLd = {
   telephone: PHONE,
   image: new URL("og.jpg", SITE_URL).href,
   logo: new URL(logo.src, SITE_URL).href,
-  sameAs: ["https://rise-academy.grexa.site"],
+  sameAs: ["https://rise-academy.grexa.site", YOUTUBE],
   hasMap: `https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`,
   // Decoded from the plus code 7JWVG25G+V9 (G25G+V9 Gurugram).
   geo: { "@type": "GeoCoordinates", latitude: 28.50969, longitude: 77.02594 },
@@ -167,6 +168,28 @@ export default function Home() {
             </ul>
           </div>
         </section>
+
+        {VIDEOS.length > 0 && (
+          <section id="classes" className="py-14 sm:py-20">
+            <div className="mx-auto max-w-5xl px-4">
+              <SectionTitle eyebrow="See how we teach" title="Inside our classes" />
+              <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">
+                Real classes with Ravil Sir: spoken English, grammar, and preparation for SSC CGL, CUET and job interviews.
+              </p>
+              <ul className="grid gap-5 sm:grid-cols-2">
+                {VIDEOS.map(({ id, title }, i) => (
+                  <li key={id} className={cn("rounded-2xl bg-white/10 p-1.5 backdrop-blur-lg", i === 0 && "sm:col-span-2")}>
+                    <YouTube id={id} title={title} hd={i === 0} />
+                    <p className="px-3 pt-3 pb-2 text-sm font-medium text-white/85">{title}</p>
+                  </li>
+                ))}
+              </ul>
+              <a href={YOUTUBE} target="_blank" rel="noopener" className={cn(glassButton, "mt-8")}>
+                Watch more classes on YouTube
+              </a>
+            </div>
+          </section>
+        )}
 
         <section id="reviews" className="py-14 sm:py-20">
           <div className="mx-auto grid max-w-5xl items-center gap-10 px-4 md:grid-cols-2">

@@ -9,9 +9,9 @@ import {
   feeStatus,
   localToday,
   monthLabel,
-  nextMonths,
   normalizePhone,
   paidFor,
+  payableMonths,
   rupees,
   type Enrollment,
   type EnrollmentValues,
@@ -198,7 +198,7 @@ export function EnrollmentForm({
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
       <EnrollmentFields enrollment={enrollment} />
-      {enrollment?.fee_type === "monthly" && enrollment.payments.length > 0 && (
+      {enrollment?.active && enrollment.fee_type === "monthly" && enrollment.payments.length > 0 && (
         <label className="flex items-start gap-2 text-sm text-white/70">
           <input type="checkbox" name="from_next_month" defaultChecked className="mt-1" />
           <span>
@@ -224,15 +224,14 @@ export function PaymentForm({
   const today = localToday();
   const monthly = enrollment.fee_type === "monthly";
   const status = feeStatus(enrollment, today);
-  // Unpaid or part-paid months first (oldest first), then the next few months for fees paid in advance.
   const left = (m: string) => enrollment.fee_amount - paidFor(enrollment, m);
-  const months = [...new Set([...status.unpaidMonths, ...nextMonths(today, 3)])].filter((m) => left(m) > 0);
+  const months = payableMonths(enrollment, today);
 
   const { error, busy, onSubmit } = useSubmit((f) => {
     const amount = Number(text(f, "amount"));
     if (!Number.isInteger(amount) || amount <= 0) return "Enter the amount paid in whole rupees.";
     const for_month = monthly ? text(f, "for_month") || null : null;
-    if (monthly && !for_month) return "Choose the month this payment is for.";
+    if (monthly && !for_month) return months.length ? "Choose the month this payment is for." : "Every month of this course is already paid.";
     return {
       payment: { amount, paid_on: text(f, "paid_on") || today, for_month, method: text(f, "method"), note: text(f, "note") || null },
       next_due_on: monthly ? null : text(f, "next_due_on") || null,
@@ -258,7 +257,9 @@ export function PaymentForm({
           <Input name="paid_on" type="date" required defaultValue={today} />
         </Field>
       </div>
-      {monthly ? (
+      {monthly && !months.length ? (
+        <p className="text-sm text-white/70">Every month of this course is already paid.</p>
+      ) : monthly ? (
         <Field label="For month">
           <select name="for_month" className={selectClass}>
             {months.map((m) => (

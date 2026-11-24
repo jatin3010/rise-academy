@@ -3,13 +3,14 @@
 import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
-import { asset, RATING, REVIEW_COUNT, WHATSAPP } from "@/lib/site";
+import { asset, RATING, REVIEW_COUNT, VIDEOS, WHATSAPP } from "@/lib/site";
 import { CTA, GLASS } from "@/lib/styles";
 import logo from "./logo.jpeg";
 
 const LINKS = [
   ["Courses", "#courses"],
   ["Why Rise", "#why"],
+  ...(VIDEOS.length ? [["Classes", "#classes"]] : []),
   ["Reviews", "#reviews"],
   ["Contact", "#contact"],
 ];

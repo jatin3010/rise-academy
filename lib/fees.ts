@@ -100,6 +100,14 @@ export function dueMonths(startedOn: string, dueDay: number, today: string): str
 export const paidFor = (e: Enrollment, month: string) =>
   e.payments.reduce((sum, p) => (p.for_month === month ? sum + p.amount : sum), 0);
 
+// Months a monthly payment can be for: unpaid or part-paid ones (oldest first), then the next few for paying in
+// advance; only months the course runs in (a new fee that starts in January takes no December payment).
+export function payableMonths(e: Enrollment, today: string): string[] {
+  const months = [...new Set([...feeStatus(e, today).unpaidMonths, ...nextMonths(today, 3)])];
+  const first = `${e.started_on.slice(0, 7)}-01`;
+  return months.filter((m) => paidFor(e, m) < e.fee_amount && m >= first && (!e.ended_on || m <= e.ended_on));
+}
+
 export function feeStatus(e: Enrollment, today: string): FeeStatus {
   const paid = e.payments.reduce((sum, p) => sum + p.amount, 0);
   if (e.fee_type === "monthly") {
@@ -114,8 +122,10 @@ export function feeStatus(e: Enrollment, today: string): FeeStatus {
 }
 
 // A new monthly fee starts after the last month already charged or paid for (paid in advance included); those
-// months keep the old fee. Returns the update that ends the current course and the new course to add.
+// months keep the old fee. Returns the update that ends the current course and the new course to add, or null when
+// there is nothing to split (course stopped, not monthly, or the fee unchanged): then the edit just updates it.
 export function changeMonthlyFee(e: Enrollment, values: EnrollmentValues, today: string) {
+  if (!e.active || e.fee_type !== "monthly" || values.fee_type !== "monthly" || values.fee_amount === e.fee_amount) return null;
   const last = [`${today.slice(0, 7)}-01`, ...e.payments.map((p) => p.for_month ?? "")].sort().at(-1)!;
   const [y, m] = last.split("-").map(Number);
   const [next] = nextMonths(last, 1, 1);
