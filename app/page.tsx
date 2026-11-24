@@ -1,9 +1,9 @@
-import Image from "next/image";
-import { BookOpen, CheckCheck, MessageCircle, Monitor, SendHorizontal, Star } from "lucide-react";
+import { BookOpen, MessageCircle, Monitor, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap";
 import TrueFocus from "@/components/TrueFocus";
+import FaqChat from "@/components/FaqChat";
 import VideoReviews from "@/components/VideoReviews";
 import YouTube from "@/components/YouTube";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,7 +48,7 @@ const reviews = [
 const about = `Rise Academy (राइज़ एकेडमी) is a coaching centre at A-117, Bajghera Road, New Palam Vihar, Sector 110, Gurugram. It offers school tuition for Classes 1 to 12, spoken English, personality development, interview preparation, IELTS and PTE coaching, and computer courses including MS Office, Advanced Excel, Tally, digital marketing and website designing. Students rate it ${RATING} out of 5 on Google across ${REVIEW_COUNT.toLocaleString("en-IN")} reviews.`;
 
 // Only facts from the Google listing and the academy's banners; no fees or batch times, which we don't know.
-const faqs = [
+const faqs: [string, string][] = [
   ["What courses does Rise Academy offer?", courses.map(({ title, items }) => `${title}: ${items.join(", ")}`).join(". ") + "."],
   ["Which school classes do you teach?", "All classes from 1st to 12th, in three wings: Junior (Classes 1–5), Middle (Classes 6–8) and Senior (Classes 9–12)."],
   ["Where is Rise Academy in Gurugram?", `${ADDRESS}. Google Maps plus code: G25G+V9 Gurugram.`],
@@ -257,45 +257,7 @@ export default function Home() {
         <section id="faq" className="py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Asked by parents and students" title="Common questions" />
-            {/* FAQ as a chat thread: the visitor's question on the right, the academy's reply on the left.
-                Every answer stays visible page text for search and AI answers. */}
-            <div className="max-w-2xl overflow-hidden rounded-2xl bg-[#0b141a]/85 ring-1 ring-white/10 backdrop-blur-lg">
-              <div className="flex items-center gap-3 bg-[#202c33] px-4 py-3">
-                <Image src={logo} alt="" width={40} height={40} unoptimized className="size-10 rounded-full object-cover" />
-                <div>
-                  <div className="font-semibold">Rise Academy</div>
-                  <div className="text-xs text-white/60">Questions parents and students ask us</div>
-                </div>
-              </div>
-
-              <dl className="flex flex-col gap-2 px-3 py-5 sm:px-5">
-                {faqs.map(([question, answer]) => (
-                  <div key={question} className="flex flex-col gap-2">
-                    <dt className="ml-auto max-w-[85%] rounded-lg rounded-tr-none bg-[#005c4b] px-3 py-2 text-sm text-white">
-                      {question}
-                      <CheckCheck className="float-right mt-0.5 ml-2 size-4 text-[#53bdeb]" aria-hidden />
-                    </dt>
-                    <dd className="mr-auto mb-2 max-w-[85%] rounded-lg rounded-tl-none bg-[#202c33] px-3 py-2 text-sm leading-relaxed text-white/90">
-                      {answer}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-
-              <a
-                href={WHATSAPP}
-                target="_blank"
-                rel="noopener"
-                className="flex items-center gap-2 bg-[#202c33] px-3 py-2.5 transition-colors hover:bg-[#2a3942]"
-              >
-                <span className="flex-1 rounded-full bg-[#2a3942] px-4 py-2.5 text-sm text-white/60">
-                  Ask your own question on WhatsApp…
-                </span>
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#00a884] text-[#0b141a]" aria-hidden>
-                  <SendHorizontal className="size-5" />
-                </span>
-              </a>
-            </div>
+            <FaqChat faqs={faqs} logo={logo} whatsapp={WHATSAPP} />
           </div>
         </section>
 
