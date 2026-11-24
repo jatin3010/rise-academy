@@ -265,6 +265,14 @@ function Dashboard({ email }: { email: string }) {
     .filter((s) => !dueOnly || s.enrollments.some((e) => feeStatus(e, today).overdue))
     .sort((a, b) => Number(b.active) - Number(a.active));
   const overdueTotal = overdue.reduce((n, r) => n + r.st.balance, 0);
+  // Same name and number as another student (the Excel import's rule too), so nobody gets two cards and split payments.
+  const duplicateOf = (v: { name: string; phone: string }, exceptId?: string) => {
+    const twin = students.find((x) => x.id !== exceptId && studentKey(x.name, x.phone) === studentKey(v.name, v.phone));
+    if (!twin) return null;
+    return twin.active
+      ? `${twin.name} (${twin.phone}) is already in the CRM. Search for them instead.`
+      : `${twin.name} (${twin.phone}) is already in the CRM, marked as left. Use “Re-join” on their card.`;
+  };
   const goTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   const months = monthlyTotals(students, nextMonths(today, 7, -6)); // the last 7 months, for the two charts
@@ -596,12 +604,8 @@ function Dashboard({ email }: { email: string }) {
               onCancel={() => setPanel(null)}
               onSave={({ student, enrollment }) =>
                 save(async () => {
-                  // Same check as the Excel import, so one student never ends up with two cards and split payments.
-                  const twin = students.find((x) => studentKey(x.name, x.phone) === studentKey(student.name, student.phone));
-                  if (twin)
-                    return twin.active
-                      ? `${twin.name} (${twin.phone}) is already in the CRM. Search for them to add a course.`
-                      : `${twin.name} (${twin.phone}) is already in the CRM, marked as left. Use “Re-join” on their card.`;
+                  const duplicate = duplicateOf(student);
+                  if (duplicate) return duplicate;
                   const { data, error } = await db.from("students").insert(student).select("id").single();
                   if (error) return error.message;
                   if (enrollment) {
@@ -618,7 +622,9 @@ function Dashboard({ email }: { email: string }) {
             <StudentForm
               student={panel.student}
               onCancel={() => setPanel(null)}
-              onSave={({ student }) => save(async () => (await db.from("students").update(student).eq("id", panel.student.id)).error?.message ?? null)}
+              onSave={({ student }) =>
+                save(async () => duplicateOf(student, panel.student.id) ?? (await db.from("students").update(student).eq("id", panel.student.id)).error?.message ?? null)
+              }
             />
           )}
           {panel.kind === "addCourse" && (

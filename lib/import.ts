@@ -83,6 +83,7 @@ export function planImport(rows: Cell[][], existing: Pick<Student, "name" | "pho
 
     const typeText = text(get("feeType")).toLowerCase();
     const fee_type = /month/.test(typeText) ? "monthly" : /course|one|total|instal|install/.test(typeText) ? "course" : group.feeType;
+    if (!text(get("fee"))) return fail("Fee amount is empty."); // a blank cell would otherwise read as a ₹0 (free) course
     const fee_amount = Number(text(get("fee")).replace(/[₹,\s]|rs\.?/gi, ""));
     if (!Number.isInteger(fee_amount) || fee_amount < 0) return fail(`Fee amount "${text(get("fee"))}" must be a whole number of rupees.`);
 

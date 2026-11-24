@@ -37,10 +37,10 @@ export default function Hero() {
       <video src={asset("hero.mp4")} poster={asset("hero.jpg")} autoPlay loop muted playsInline aria-hidden className="absolute inset-0 h-full w-full object-cover" />
 
       <div className="relative z-10 flex flex-1 flex-col">
-        <nav className="flex items-center justify-between px-5 py-5 sm:px-8 sm:py-6 lg:px-12">
+        <nav className="flex items-center justify-between gap-4 px-5 py-5 sm:px-8 sm:py-6 lg:px-12">
           <a href="#top" className="flex items-center gap-2">
             <Image src={logo} alt="" width={36} height={36} unoptimized priority className="h-9 w-9 rounded-full object-cover" />
-            <span className="text-lg font-semibold text-[#010101] lg:text-white">Rise Academy</span>
+            <span className="whitespace-nowrap text-lg font-semibold text-[#010101] lg:text-white">Rise Academy</span>
           </a>
 
           <div className="hidden gap-3 md:flex">
@@ -50,7 +50,7 @@ export default function Hero() {
                 <a
                   key={label}
                   href={href}
-                  className="rounded-full px-4 py-1.5 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                  className="whitespace-nowrap rounded-full px-2.5 py-1.5 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white lg:px-4"
                 >
                   {label}
                 </a>
@@ -60,7 +60,7 @@ export default function Hero() {
               href={WHATSAPP}
               target="_blank"
               rel="noopener"
-              className={`flex items-center self-stretch rounded-full px-5 text-sm font-medium text-white ${CTA}`}
+              className={`flex items-center self-stretch whitespace-nowrap rounded-full px-5 text-sm font-medium text-white ${CTA}`}
             >
               Enroll now
             </a>

@@ -23,7 +23,7 @@ publish to GitHub Pages. The CRM needs two repository variables, `SUPABASE_URL` 
 
 ## Where things are
 
-- `app/page.tsx`, `app/hero.tsx` — the landing page; `lib/site.ts` — phone, rating, site URL.
+- `app/page.tsx`, `app/hero.tsx` — the landing page; `lib/site.ts` — phone, rating, site URL, class videos (YouTube) and review videos (`public/reviews/`).
 - `app/admin/` — the CRM screens; `lib/fees.ts`, `lib/import.ts`, `lib/report.ts` — its rules, with tests next to them.
 - `lib/courses.ts` — the course list, shared by the site and the CRM.
 - `supabase/schema.sql` — tables and access rules (safe to run again).

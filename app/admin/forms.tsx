@@ -12,6 +12,7 @@ import {
   normalizePhone,
   paidFor,
   payableMonths,
+  paymentProblem,
   rupees,
   type Enrollment,
   type EnrollmentValues,
@@ -231,14 +232,8 @@ export function PaymentForm({
     const amount = Number(text(f, "amount"));
     if (!Number.isInteger(amount) || amount <= 0) return "Enter the amount paid in whole rupees.";
     const for_month = monthly ? text(f, "for_month") || null : null;
-    if (monthly && !for_month) return months.length ? "Choose the month this payment is for." : "Every month of this course is already paid.";
-    // Never more than is owed: ₹3,000 recorded against one ₹1,500 month would leave the next month looking unpaid.
-    if (for_month && amount > left(for_month))
-      return `${rupees(amount)} is more than the ${rupees(left(for_month))} left for ${monthLabel(for_month)}. Record the rest as a second payment for the next month.`;
-    if (!monthly && amount > status.balance)
-      return status.balance
-        ? `${rupees(amount)} is more than the ${rupees(status.balance)} left on this course. If the course fee changed, use “Edit fee” first.`
-        : "This course is already fully paid.";
+    const problem = paymentProblem(enrollment, amount, for_month, today);
+    if (problem) return problem;
     return {
       payment: { amount, paid_on: text(f, "paid_on") || today, for_month, method: text(f, "method"), note: text(f, "note") || null },
       next_due_on: monthly ? null : text(f, "next_due_on") || null,

@@ -121,6 +121,23 @@ export function feeStatus(e: Enrollment, today: string): FeeStatus {
   return { balance, overdue, unpaidMonths: [], paid };
 }
 
+// Why a payment can't be recorded, or null when it can. Never more than is owed: ₹3,000 recorded against one ₹1,500
+// month would leave the next month looking unpaid.
+export function paymentProblem(e: Enrollment, amount: number, forMonth: string | null, today: string): string | null {
+  if (e.fee_type === "monthly") {
+    if (!forMonth) return payableMonths(e, today).length ? "Choose the month this payment is for." : "Every month of this course is already paid.";
+    const left = e.fee_amount - paidFor(e, forMonth);
+    return amount > left
+      ? `${rupees(amount)} is more than the ${rupees(left)} left for ${monthLabel(forMonth)}. Record the rest as a second payment for the next month.`
+      : null;
+  }
+  const { balance } = feeStatus(e, today);
+  if (amount <= balance) return null;
+  return balance
+    ? `${rupees(amount)} is more than the ${rupees(balance)} left on this course. If the course fee changed, use “Edit fee” first.`
+    : "This course is already fully paid.";
+}
+
 // A new monthly fee starts after the last month already charged or paid for (paid in advance included); those
 // months keep the old fee. Returns the update that ends the current course and the new course to add, or null when
 // there is nothing to split (course stopped, not monthly, or the fee unchanged): then the edit just updates it.
