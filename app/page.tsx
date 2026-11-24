@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap";
 import TrueFocus from "@/components/TrueFocus";
+import VideoReviews from "@/components/VideoReviews";
 import YouTube from "@/components/YouTube";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { COURSES } from "@/lib/courses";
-import { PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, SITE_URL, VIDEOS, WHATSAPP, YOUTUBE } from "@/lib/site";
+import { asset, PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, REVIEW_VIDEOS, SITE_URL, VIDEOS, WHATSAPP, YOUTUBE } from "@/lib/site";
 import { CTA, GLASS, GLASS_CARD } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 import Hero from "./hero";
@@ -234,6 +235,24 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {REVIEW_VIDEOS.length > 0 && (
+          <section id="video-reviews" className="py-14 sm:py-20">
+            <div className="mx-auto max-w-5xl px-4">
+              <SectionTitle eyebrow="In their own words" title="What students and parents say" />
+              <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">
+                Rise Academy students and parents talk about their experience, filmed at the academy.
+              </p>
+              <VideoReviews
+                videos={REVIEW_VIDEOS.map((n) => ({
+                  src: asset(`reviews/review-${n}.mp4`),
+                  poster: asset(`reviews/review-${n}.jpg`),
+                  label: `Video review ${n} of ${REVIEW_VIDEOS.length} from a Rise Academy student or parent`,
+                }))}
+              />
+            </div>
+          </section>
+        )}
 
         <section id="faq" className="py-14 sm:py-20">
           <div className="mx-auto max-w-5xl px-4">

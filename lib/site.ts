@@ -10,7 +10,11 @@ export const WHATSAPP = "https://wa.me/917042481547";
 export const RATING = "4.9";
 export const REVIEW_COUNT = 1001;
 
-export const YOUTUBE = "https://www.youtube.com/@Riseacademyenglish";
+// Video reviews in public/reviews/: review-N.mp4 (compressed from the originals) and review-N.jpg (a frame used as its
+// cover). Shown in "What students and parents say", in this order.
+export const REVIEW_VIDEOS = [1, 2, 3];
+
+export const YOUTUBE ="https://www.youtube.com/@Riseacademyenglish";
 // Real class videos from Rise Academy's YouTube only: the video id (the 11 characters after "watch?v=", "youtu.be/" or
 // "shorts/" in its link) and a short title. The first is shown large. The "Inside our classes" section and its menu
 // link stay hidden while empty.
