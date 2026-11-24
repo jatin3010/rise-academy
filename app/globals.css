@@ -4,6 +4,22 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Home page entrance animations (components/Motion.tsx): hidden until animated in, only while layout.tsx has set
+   "will-animate", so without JavaScript or with reduced motion everything shows as normal. Screens only: printing
+   doesn't scroll, so parts not yet scrolled to would print blank. A nested [data-reveal] (a grid of glass cards)
+   never fades as a whole, only its cards do: browsers drop the frosted blur behind children of a see-through parent. */
+@media screen {
+  .will-animate [data-hero],
+  .will-animate [data-reveal] > :not([data-reveal]) {
+    opacity: 0;
+  }
+}
+@media print {
+  [data-reveal] > * {
+    transition: none; /* print shows the final look at once, never a fade caught half-way */
+  }
+}
+
 /* Bars that grow from the left (CRM course counts). Used as motion-safe:animate-grow-x. */
 @theme {
   --animate-grow-x: grow-x 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;

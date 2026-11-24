@@ -31,8 +31,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-IN" className={`${geist.variable} ${silkscreen.variable} h-full motion-safe:scroll-smooth antialiased`}>
+    // suppressHydrationWarning: the script below adds "will-animate" to <html> before React loads, on purpose.
+    <html lang="en-IN" className={`${geist.variable} ${silkscreen.variable} h-full motion-safe:scroll-smooth antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
+        {/* Before the first paint: let components/Motion.tsx hide what it animates in, only when JavaScript runs and
+            motion is allowed. If it hasn't started within 4 s (very slow connection), show everything as it is. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if(matchMedia("(prefers-reduced-motion: no-preference)").matches){var r=document.documentElement;r.classList.add("will-animate");setTimeout(function(){if(!r.hasAttribute("data-animated"))r.classList.remove("will-animate")},4000)}`,
+          }}
+        />
         {/* Dimmed hero frame fixed behind every page, so glass panels have something to blur. */}
         <div
           aria-hidden

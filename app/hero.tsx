@@ -120,7 +120,7 @@ export default function Hero() {
 
         <div className="mt-auto flex flex-col gap-6 px-5 pb-8 sm:gap-8 sm:px-8 sm:pb-12 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:pb-16">
           <div className="max-w-xl">
-            <h1 className="text-3xl font-semibold leading-[1.1] tracking-tight text-[#010101] sm:text-4xl lg:text-[3.5rem] lg:text-white">
+            <h1 data-hero className="text-3xl font-semibold leading-[1.1] tracking-tight text-[#010101] sm:text-4xl lg:text-[3.5rem] lg:text-white">
               {/* Says who and where in the main heading, for search and AI answers; the tagline stays the visual headline. */}
               <span className="mb-3 block text-sm font-medium tracking-normal opacity-70">
                 Rise Academy · Coaching in Sector 110, Gurugram
@@ -128,6 +128,7 @@ export default function Hero() {
               Strong foundations today. Successful futures tomorrow.
             </h1>
             <form
+              data-hero
               onSubmit={requestCallback}
               className="mt-6 flex flex-col gap-3 sm:mt-8 sm:inline-flex sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:bg-white sm:p-1.5"
             >
@@ -149,8 +150,9 @@ export default function Hero() {
           </div>
 
           <div className="flex w-full flex-col gap-4 sm:flex-row lg:w-auto lg:gap-5">
-            <div className={`flex flex-col justify-between sm:w-64 ${GLASS}`}>
+            <div data-hero className={`flex flex-col justify-between sm:w-64 ${GLASS}`}>
               <p
+                data-count={REVIEW_COUNT}
                 style={{ fontFamily: "var(--font-silkscreen), cursive" }}
                 className="text-3xl font-normal tracking-tight text-[#010101] sm:text-4xl lg:text-white"
               >
@@ -161,7 +163,7 @@ export default function Hero() {
               </p>
             </div>
 
-            <figure className={`sm:w-64 ${GLASS}`}>
+            <figure data-hero className={`sm:w-64 ${GLASS}`}>
               <div className="mb-3 flex items-center gap-2 sm:mb-4">
                 <span className="grid h-6 w-6 place-items-center rounded-md bg-black text-xs font-bold text-white" aria-hidden>
                   G

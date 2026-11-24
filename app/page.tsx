@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap";
 import TrueFocus from "@/components/TrueFocus";
 import FaqChat from "@/components/FaqChat";
+import Motion from "@/components/Motion";
 import VideoReviews from "@/components/VideoReviews";
 import YouTube from "@/components/YouTube";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,13 +128,14 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <main id="top">
+        <Motion />
         <Hero />
 
         <section id="courses" className="py-14 sm:py-20">
-          <div className="mx-auto max-w-5xl px-4">
+          <div data-reveal className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="The best coaching in Gurugram" title="Our courses" />
             <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">{about}</p>
-            <div className="grid gap-5 md:grid-cols-3">
+            <div data-reveal className="grid gap-5 md:grid-cols-3">
               {courses.map(({ icon: Icon, title, text, items }) => (
                 <Card key={title} className={`p-2 ${GLASS_CARD}`}>
                   <CardHeader>
@@ -157,9 +159,9 @@ export default function Home() {
         </section>
 
         <section id="why" className="py-14 sm:py-20">
-          <div className="mx-auto max-w-5xl px-4">
+          <div data-reveal className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Why students choose us" title="Why Rise Academy" />
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <ul data-reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {reasons.map(([title, text]) => (
                 <li key={title} className={GLASS}>
                   <strong className="block font-semibold">{title}</strong>
@@ -172,12 +174,12 @@ export default function Home() {
 
         {VIDEOS.length > 0 && (
           <section id="classes" className="py-14 sm:py-20">
-            <div className="mx-auto max-w-5xl px-4">
+            <div data-reveal className="mx-auto max-w-5xl px-4">
               <SectionTitle eyebrow="See how we teach" title="Inside our classes" />
               <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">
                 Real classes with Ravil Sir: spoken English, grammar, and preparation for SSC CGL, CUET and job interviews.
               </p>
-              <ul className="grid gap-5 sm:grid-cols-2">
+              <ul data-reveal className="grid gap-5 sm:grid-cols-2">
                 {VIDEOS.map(({ id, title }, i) => (
                   <li key={id} className={cn("rounded-2xl bg-white/10 p-1.5 backdrop-blur-lg", i === 0 && "sm:col-span-2")}>
                     <YouTube id={id} title={title} hd={i === 0} />
@@ -193,7 +195,7 @@ export default function Home() {
         )}
 
         <section id="reviews" className="py-14 sm:py-20">
-          <div className="mx-auto grid max-w-5xl items-center gap-10 px-4 md:grid-cols-2">
+          <div data-reveal className="mx-auto grid max-w-5xl items-center gap-10 px-4 md:grid-cols-2">
             <div>
               <SectionTitle
                 eyebrow={`${RATING} ★ from ${REVIEW_COUNT.toLocaleString("en-IN")} Google reviews`}
@@ -238,7 +240,7 @@ export default function Home() {
 
         {REVIEW_VIDEOS.length > 0 && (
           <section id="video-reviews" className="py-14 sm:py-20">
-            <div className="mx-auto max-w-5xl px-4">
+            <div data-reveal className="mx-auto max-w-5xl px-4">
               <SectionTitle eyebrow="In their own words" title="What students and parents say" />
               <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">
                 Rise Academy students and parents talk about their experience, filmed at the academy.
@@ -256,16 +258,16 @@ export default function Home() {
         )}
 
         <section id="faq" className="py-14 sm:py-20">
-          <div className="mx-auto max-w-5xl px-4">
+          <div data-reveal className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Asked by parents and students" title="Common questions" />
             <FaqChat faqs={faqs} logo={logo} whatsapp={WHATSAPP} />
           </div>
         </section>
 
         <section id="contact" className="py-14 sm:py-20">
-          <div className="mx-auto max-w-5xl px-4">
+          <div data-reveal className="mx-auto max-w-5xl px-4">
             <SectionTitle eyebrow="Visit or call us" title="Contact" />
-            <div className="grid items-start gap-5 md:grid-cols-2">
+            <div data-reveal className="grid items-start gap-5 md:grid-cols-2">
               <div className={GLASS}>
                 <dl className="grid gap-5">
                   {[
