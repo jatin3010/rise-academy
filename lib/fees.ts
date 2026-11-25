@@ -1,5 +1,6 @@
 // Fee rules and WhatsApp messages for the admin CRM. Pure functions (no browser or database), tested in fees.test.mjs.
 // Dates are 'YYYY-MM-DD' strings in the academy's local time, so month maths never shifts across time zones.
+import { PHONE_DISPLAY, UPI_ID } from "./site.ts";
 
 export type Payment = {
   id: string;
@@ -169,17 +170,22 @@ export const studentKey = (name: string, phone: string) => `${name.trim().toLowe
 export const waLink =(phone: string, text: string) =>
   `https://wa.me/${normalizePhone(phone)}?text=${encodeURIComponent(text)}`;
 
-const SIGN_OFF = "\n\nTeam Rise Academy\nSector 110, Gurugram · 070424 81547";
+const SIGN_OFF = `\n\nTeam Rise Academy\nSector 110, Gurugram · ${PHONE_DISPLAY}`;
 
 export function welcomeText(s: Pick<Student, "name">, courses: string[]) {
   const enrolled = courses.length ? ` You are now enrolled in ${courses.join(", ")}.` : "";
   return `Namaste ${s.name}! 🙏\n\nWelcome to Rise Academy.${enrolled} We are happy to have you with us.\n\nFor any question, call or WhatsApp us on this number.${SIGN_OFF}`;
 }
 
-export function reminderText(s: Pick<Student, "name">, e: Enrollment, status: FeeStatus) {
+// For a number left in the website's "Get a call back" form.
+export const callbackText = `Namaste! This is Rise Academy. You asked us to call you back from our website. When is a good time to talk?${SIGN_OFF}`;
+
+// upi: the academy's UPI ID; a plain ID to copy, because WhatsApp doesn't make upi:// payment links tappable.
+export function reminderText(s: Pick<Student, "name">, e: Enrollment, status: FeeStatus, upi = UPI_ID) {
   const what =
     e.fee_type === "monthly"
       ? `the ${e.course} fee of ${rupees(status.balance)} for ${status.unpaidMonths.map(monthLabel).join(", ")}`
       : `the remaining ${e.course} course fee of ${rupees(status.balance)}`;
-  return `Namaste ${s.name},\n\nThis is a gentle reminder from Rise Academy that ${what} is due. Please pay at the academy at your convenience. If you have already paid, please ignore this message.\n\nThank you! 🙏${SIGN_OFF}`;
+  const pay = upi ? ` or by UPI to ${upi} (${rupees(status.balance)})` : "";
+  return `Namaste ${s.name},\n\nThis is a gentle reminder from Rise Academy that ${what} is due. Please pay at the academy${pay} at your convenience. If you have already paid, please ignore this message.\n\nThank you! 🙏${SIGN_OFF}`;
 }

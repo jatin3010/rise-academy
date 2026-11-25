@@ -1,0 +1,25 @@
+name: Keep the CRM database awake
+
+# Supabase pauses a free project after about a week without requests, and the CRM then shows nothing until someone
+# restores it in the Supabase dashboard. This asks the database a question twice a week (the answer is "not allowed",
+# since the question comes without a login; the request still counts as activity).
+on:
+  schedule:
+    - cron: "17 3 * * 1,4" # Mondays and Thursdays, 08:47 in India
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask the database
+        env:
+          URL: ${{ vars.SUPABASE_URL }}
+          KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$URL" ]; then echo "SUPABASE_URL is not set; nothing to keep awake."; exit 0; fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" -H "apikey: $KEY" "$URL/rest/v1/enquiries?select=id&limit=1")
+          echo "Supabase answered $code"
+          if [ "$code" = "000" ] || [ "$code" -ge 500 ]; then exit 1; fi

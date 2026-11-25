@@ -30,17 +30,30 @@ const MENU = {
   style: { "--pn-mark": "34px" }, // the logo fills most of its round bubble
 };
 
-// Opens WhatsApp with the visitor's number pre-filled, so the academy can call them back.
+// Opens WhatsApp with the visitor's number pre-filled, so the academy can call them back, and also saves the number in
+// the CRM's call-back list (supabase/schema.sql, submit_enquiry) in case they never press send. WhatsApp opens first:
+// browsers only allow it straight from the click. The save is best effort; keepalive lets it finish even if the phone
+// switches to the WhatsApp app.
 function requestCallback(e: FormEvent<HTMLFormElement>) {
   e.preventDefault();
-  const phone = new FormData(e.currentTarget).get("phone");
+  const phone = String(new FormData(e.currentTarget).get("phone"));
   const text = encodeURIComponent(`Hi Rise Academy, please call me back on ${phone}`);
   window.open(`${WHATSAPP}?text=${text}`, "_blank", "noopener");
+  window.gtag?.("event", "generate_lead", { method: "callback_form" });
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_KEY;
+  if (!url || !key) return;
+  fetch(`${url}/rest/v1/rpc/submit_enquiry`, {
+    method: "POST",
+    keepalive: true,
+    headers: { apikey: key, "Content-Type": "application/json" },
+    body: JSON.stringify({ mobile_number: phone }),
+  }).catch(() => {});
 }
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-svh w-full flex-col overflow-hidden">
+    <section id="hero" className="relative flex min-h-svh w-full flex-col overflow-hidden">
       <video src={asset("hero.mp4")} poster={asset("hero.jpg")} autoPlay loop muted playsInline aria-hidden className="absolute inset-0 h-full w-full object-cover" />
 
       <div className="relative z-10 flex flex-1 flex-col">

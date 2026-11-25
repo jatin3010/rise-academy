@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { COURSES } from "@/lib/courses";
 import {
+  callbackText,
   changeMonthlyFee,
   dateLabel,
   feeStatus,
@@ -43,6 +44,10 @@ type Panel =
   | { kind: "payment"; student: Student; enrollment: Enrollment }
   | { kind: "import" }
   | null;
+
+// A number left in the website's "Get a call back" form (supabase/schema.sql, enquiries).
+type Enquiry = { id: string; phone: string; status: string; created_at: string };
+const ENQUIRY_STATUSES = ["new", "called", "joined", "not interested"];
 
 const waButton = "inline-flex h-7 items-center rounded-lg bg-[#00a884] px-2.5 text-xs font-medium text-[#0b141a] hover:opacity-90";
 // Panels fade and rise in one after another; motion-safe keeps them still for people who prefer reduced motion.
@@ -202,6 +207,26 @@ function Dashboard({ email }: { email: string }) {
         from += data.length;
       }
     })();
+    return () => {
+      current = false;
+    };
+  }, [db, version]);
+
+  // The newest 200 call-back requests. Kept apart from the students so that, before supabase/schema.sql has been run
+  // again to create the table, only this list shows a hint and the rest of the CRM works as usual.
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [enquiryError, setEnquiryError] = useState("");
+  useEffect(() => {
+    let current = true;
+    db.from("enquiries")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200)
+      .then(({ data, error }) => {
+        if (!current) return;
+        setEnquiryError(error?.message ?? "");
+        setEnquiries((data ?? []) as Enquiry[]);
+      });
     return () => {
       current = false;
     };
@@ -391,6 +416,19 @@ function Dashboard({ email }: { email: string }) {
                     <Button size="sm" disabled={exporting} onClick={() => downloadReport(students)}>
                       {exporting ? "Preparing…" : "Download Excel"}
                     </Button>
+                    {/* Everything in one file, every year: keep a copy somewhere safe now and then. */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        saveFile(
+                          new Blob([JSON.stringify({ saved: today, students, enquiries }, null, 2)], { type: "application/json" }),
+                          `rise-academy-backup-${today}.json`,
+                        )
+                      }
+                    >
+                      Backup (all data)
+                    </Button>
                   </div>
                 </>
               ),
@@ -452,6 +490,54 @@ function Dashboard({ email }: { email: string }) {
           clickEffect
           onItemClick={(item: (typeof bento)[number]) => item.run()}
         />
+      </section>
+
+      <section id="enquiries" className="mt-8" aria-labelledby="enquiries-title">
+        <h2 id="enquiries-title" className="flex items-center gap-2 text-lg font-semibold">
+          Call-back requests
+          {enquiries.some((q) => q.status === "new") && (
+            <Badge>{enquiries.filter((q) => q.status === "new").length} new</Badge>
+          )}
+        </h2>
+        {enquiryError ? (
+          <p className="mt-2 text-sm text-amber-300">
+            Call-back requests can&apos;t load ({enquiryError}). If you haven&apos;t yet, run <code>supabase/schema.sql</code>{" "}
+            again in Supabase → SQL Editor.
+          </p>
+        ) : enquiries.length === 0 ? (
+          <p className="mt-2 text-sm text-white/60">
+            None yet. Numbers typed into “Get a call back” on the website appear here.
+          </p>
+        ) : (
+          <ul className="mt-3 grid gap-2">
+            {enquiries.map((q) => (
+              <li key={q.id}>
+                <Card className="crm-card flex-row flex-wrap items-center gap-2 px-4 py-3 text-sm">
+                  <a className="font-medium hover:underline" href={`tel:+91${q.phone}`}>{q.phone}</a>
+                  <span className="text-white/50">
+                    {new Date(q.created_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
+                  </span>
+                  <span className="grow" />
+                  <a className={waButton} href={waLink(q.phone, callbackText)} target="_blank" rel="noopener">WhatsApp</a>
+                  <select
+                    className="h-7 rounded-lg border border-input bg-transparent px-2 text-xs"
+                    aria-label={`Status of ${q.phone}`}
+                    value={q.status}
+                    onChange={(e) => act(db.from("enquiries").update({ status: e.target.value }).eq("id", q.id))}
+                  >
+                    {ENQUIRY_STATUSES.map((s) => <option key={s}>{s}</option>)}
+                  </select>
+                  <button
+                    className="text-red-300 hover:underline"
+                    onClick={() => confirm(`Delete the call-back request from ${q.phone}?`) && act(db.from("enquiries").delete().eq("id", q.id))}
+                  >
+                    delete
+                  </button>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section id="students" className="mt-8" aria-label="Students">

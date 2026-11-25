@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Silkscreen } from "next/font/google";
 import "./globals.css";
+import Analytics from "@/components/Analytics";
 import SmoothScroll from "@/components/SmoothScroll";
-import { asset, PHONE_DISPLAY, RATING, SITE_URL } from "@/lib/site";
+import { asset, OG_IMAGE, PHONE_DISPLAY, RATING, SITE_URL } from "@/lib/site";
 import logo from "./logo.jpeg";
 
 const geist = Geist({ variable: "--font-sans", subsets: ["latin"] });
@@ -23,10 +24,12 @@ export const metadata: Metadata = {
     url: "./",
     title,
     description,
-    images: [{ url: "og.jpg", width: 1200, height: 630, alt: "Rise Academy courses banner with phone number and address" }],
+    images: [OG_IMAGE],
   },
   twitter: { card: "summary_large_image" },
   icons: logo.src,
+  // Google Search Console's ownership check (GitHub variable GOOGLE_SITE_VERIFICATION); left out while unset.
+  verification: { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION || undefined },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -48,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           style={{ backgroundImage: `linear-gradient(rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.7)), url(${asset("hero.jpg")})` }}
         />
         <SmoothScroll />
+        <Analytics />
         {children}
       </body>
     </html>

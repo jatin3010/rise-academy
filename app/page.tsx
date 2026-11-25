@@ -1,26 +1,42 @@
 import Image from "next/image";
-import { BookOpen, MessageCircle, Monitor, Star } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, BookOpen, MessageCircle, Monitor } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { InstagramIcon } from "@hugeicons/core-free-icons";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
 import CardSwap, { Card as SwapCard } from "@/components/CardSwap";
-import TrueFocus from "@/components/TrueFocus";
+import ContactBar from "@/components/ContactBar";
 import FaqChat from "@/components/FaqChat";
+import Footer from "@/components/Footer";
 import Motion from "@/components/Motion";
+import SectionTitle from "@/components/SectionTitle";
 import SpotlightCard from "@/components/SpotlightCard";
+import Stars from "@/components/Stars";
 import VideoReviews from "@/components/VideoReviews";
 import YouTube from "@/components/YouTube";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { COURSES } from "@/lib/courses";
-import { asset, INSTAGRAM, PHONE, PHONE_DISPLAY, RATING, REVIEW_COUNT, REVIEW_VIDEOS, SITE_URL, VIDEOS, WHATSAPP, YOUTUBE } from "@/lib/site";
-import { CTA, GLASS, GLASS_CARD } from "@/lib/styles";
+import {
+  ADDRESS,
+  asset,
+  FAQ,
+  INSTAGRAM,
+  MAPS_QUERY,
+  PHONE,
+  PHONE_DISPLAY,
+  RATING,
+  REVIEW_COUNT,
+  REVIEW_VIDEOS,
+  REVIEWS,
+  SITE_URL,
+  VIDEOS,
+  WHATSAPP,
+  YOUTUBE,
+} from "@/lib/site";
+import { CTA_BUTTON, GLASS, GLASS_BUTTON, GLASS_CARD } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 import Hero from "./hero";
 import logo from "./logo.jpeg";
-
-const MAPS_QUERY = "Rise+Academy+New+Palam+Vihar+Gurugram";
-const ADDRESS = "A-117, Bajghera Rd, New Palam Vihar, Block B, Chowk, Sector 110, Gurugram, Haryana 122017";
 
 const icons = { "School Tuition": BookOpen, "Spoken English & Personal Growth": MessageCircle, "Computer & Digital Skills": Monitor };
 const courses = COURSES.map((course) => ({ ...course, icon: icons[course.title] }));
@@ -33,34 +49,8 @@ const reasons = [
   ["Supportive environment", "A friendly place where students feel free to ask questions."],
 ];
 
-// Real Google reviews only. To show more, paste them here word for word with the reviewer's name as shown on Google.
-const reviews = [
-  {
-    name: "Shashwat Savarn",
-    text: "Rise Academy in New Palam Vihar provides an excellent learning environment with dedicated and approachable faculty. The teachers focus on building strong core concepts and ensure no student is left behind during doubt-clearing sessions.",
-  },
-  {
-    name: "Vinit Rana",
-    text: "Best spoken English coaching center in Gurgaon. No doubt guys, this is the best place for improvement of overall English and personality development. And Ravil sir is definitely the best mentor of my life.",
-  },
-  {
-    name: "Sanjay Vashist",
-    text: "I joined the academy to improve my English speaking and communication skills, and I have seen a noticeable improvement in my confidence and fluency.",
-  },
-];
-
 // Plain facts in one paragraph, so search engines and AI answers can quote who, what and where.
 const about = `Rise Academy (राइज़ एकेडमी) is a coaching centre at A-117, Bajghera Road, New Palam Vihar, Sector 110, Gurugram. It offers school tuition for Classes 1 to 12, spoken English, personality development, interview preparation, IELTS and PTE coaching, and computer courses including MS Office, Advanced Excel, Tally, digital marketing and website designing. Students rate it ${RATING} out of 5 on Google across ${REVIEW_COUNT.toLocaleString("en-IN")} reviews.`;
-
-// Only facts from the Google listing and the academy's banners; no fees or batch times, which we don't know.
-const faqs: [string, string][] = [
-  ["What courses does Rise Academy offer?", courses.map(({ title, items }) => `${title}: ${items.join(", ")}`).join(". ") + "."],
-  ["Which school classes do you teach?", "All classes from 1st to 12th, in three wings: Junior (Classes 1–5), Middle (Classes 6–8) and Senior (Classes 9–12)."],
-  ["Where is Rise Academy in Gurugram?", `${ADDRESS}. Google Maps plus code: G25G+V9 Gurugram.`],
-  ["What are the timings?", `The academy is open until 10 PM. Call ${PHONE_DISPLAY} to ask about batch timings.`],
-  ["Do you coach for IELTS and PTE?", "Yes. IELTS and PTE preparation is part of the Spoken English & Personal Growth programme."],
-  ["How do I join?", `Call ${PHONE_DISPLAY} or send a WhatsApp message to the same number.`],
-];
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -98,34 +88,6 @@ const jsonLd = {
   aggregateRating: { "@type": "AggregateRating", ratingValue: RATING, reviewCount: REVIEW_COUNT },
 };
 
-// Shared TrueFocus settings for section headings: white brackets like the hero, light blur so headings stay readable.
-const focus = { borderColor: "var(--primary)", blurAmount: 2, cornerSize: 12 };
-
-const big = "h-11 rounded-full px-6 text-sm font-medium";
-const ctaButton = cn(buttonVariants(), big, "text-white", CTA);
-const glassButton = cn(buttonVariants({ variant: "ghost" }), big, "bg-white/10 backdrop-blur-lg hover:bg-white/20");
-
-function Stars({ className }: { className?: string }) {
-  return (
-    <span className={cn("flex gap-0.5 text-primary", className)} role="img" aria-label="5 stars">
-      {Array.from({ length: 5 }, (_, i) => (
-        <Star key={i} className="size-4 fill-current" aria-hidden />
-      ))}
-    </span>
-  );
-}
-
-function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
-  return (
-    <>
-      <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{eyebrow}</p>
-      <h2 className="mt-3 mb-8 text-3xl font-semibold leading-[1.1] tracking-tight sm:text-4xl">
-        <TrueFocus sentence={title} {...focus} />
-      </h2>
-    </>
-  );
-}
-
 export default function Home() {
   return (
     <>
@@ -140,21 +102,25 @@ export default function Home() {
             <SectionTitle eyebrow="The best coaching in Gurugram" title="Our courses" />
             <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">{about}</p>
             <div data-reveal className="grid gap-5 md:grid-cols-3">
-              {courses.map(({ icon: Icon, title, text, items }) => (
+              {courses.map(({ icon: Icon, slug, title, text, items }) => (
                 <Card key={title} className={`p-2 ${GLASS_CARD}`}>
                   <CardHeader>
                     <Icon className="size-8 text-white/80" aria-hidden />
                     <CardTitle className="mt-3 text-xl font-semibold tracking-tight">{title}</CardTitle>
                   </CardHeader>
-                  <CardContent className="text-base text-muted-foreground">
+                  <CardContent className="flex grow flex-col text-base text-muted-foreground">
                     <p>{text}</p>
-                    <ul className="mt-4 flex flex-wrap gap-2">
+                    <ul className="mt-4 mb-5 flex flex-wrap gap-2">
                       {items.map((item) => (
                         <li key={item}>
                           <Badge variant="secondary">{item}</Badge>
                         </li>
                       ))}
                     </ul>
+                    {/* prefetch={false}: see components/Footer.tsx */}
+                    <Link href={`/courses/${slug}/`} prefetch={false} className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-white hover:underline">
+                      More about {title} <ArrowRight className="size-4" aria-hidden />
+                    </Link>
                   </CardContent>
                 </Card>
               ))}
@@ -176,6 +142,33 @@ export default function Home() {
           </div>
         </section>
 
+        {/* From his own Instagram bio (lib/site.ts); his photo is the one on that profile. */}
+        <section id="founder" className="py-14 sm:py-20">
+          <div data-reveal className="px-5 sm:px-8 lg:px-12">
+            <SectionTitle eyebrow="Meet the founder" title="Ravil Sir" />
+            <div className={`flex max-w-3xl flex-col gap-6 sm:flex-row sm:items-start ${GLASS}`}>
+              <Image
+                src={asset("instagram/profile.webp")}
+                alt="Ravil Sir, founder of Rise Academy"
+                width={96}
+                height={96}
+                unoptimized
+                className="size-24 shrink-0 rounded-full ring-2 ring-white/20"
+              />
+              <div>
+                <p className="text-lg leading-relaxed">
+                  Ravil Sir founded Rise Academy and UniKids School. A Delhi University alumnus with an IELTS band score of
+                  8.5, he teaches spoken English, grammar and exam English himself: the classes below are his.
+                </p>
+                <figure className="mt-5 border-l-2 border-white/30 pl-4">
+                  <blockquote className="text-white/80">“Ravil sir is definitely the best mentor of my life.”</blockquote>
+                  <figcaption className="mt-1 text-sm text-muted-foreground">Vinit Rana, Google review</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {VIDEOS.length > 0 && (
           <section id="classes" className="py-14 sm:py-20">
             <div data-reveal className="px-5 sm:px-8 lg:px-12">
@@ -193,7 +186,7 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <a href={YOUTUBE} target="_blank" rel="noopener" className={cn(glassButton, "mt-8")}>
+              <a href={YOUTUBE} target="_blank" rel="noopener" className={cn(GLASS_BUTTON, "mt-8")}>
                 Watch more classes on YouTube
               </a>
             </div>
@@ -215,7 +208,7 @@ export default function Home() {
                 href={`https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`}
                 target="_blank"
                 rel="noopener"
-                className={glassButton}
+                className={GLASS_BUTTON}
               >
                 Read all {REVIEW_COUNT.toLocaleString("en-IN")} reviews on Google
               </a>
@@ -224,7 +217,7 @@ export default function Home() {
                 review text readable on phones. The negative margin lets it use the full phone width. */}
             <div className="-mx-5 sm:mx-0">
             <CardSwap label="Student reviews" width={280} height={360} cardDistance={14} verticalDistance={22} depth={60} visibleCards={3} delay={5000}>
-              {reviews.map(({ name, text }) => (
+              {REVIEWS.map(({ name, text }) => (
                 <SwapCard key={name} className="flex flex-col gap-3 p-5">
                   <Stars />
                   <blockquote className="line-clamp-9 text-[15px] leading-relaxed text-white/80">“{text}”</blockquote>
@@ -360,7 +353,7 @@ export default function Home() {
         <section id="faq" className="py-14 sm:py-20">
           <div data-reveal className="px-5 sm:px-8 lg:px-12">
             <SectionTitle eyebrow="Asked by parents and students" title="Common questions" />
-            <FaqChat faqs={faqs} logo={logo} whatsapp={WHATSAPP} />
+            <FaqChat faqs={Object.values(FAQ)} logo={logo} whatsapp={WHATSAPP} />
           </div>
         </section>
 
@@ -383,12 +376,12 @@ export default function Home() {
                   ))}
                 </dl>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <a href={WHATSAPP} target="_blank" rel="noopener" className={ctaButton}>WhatsApp us</a>
+                  <a href={WHATSAPP} target="_blank" rel="noopener" className={CTA_BUTTON}>WhatsApp us</a>
                   <a
                     href={`https://www.google.com/maps/dir/?api=1&destination=${MAPS_QUERY}`}
                     target="_blank"
                     rel="noopener"
-                    className={glassButton}
+                    className={GLASS_BUTTON}
                   >
                     Get directions
                   </a>
@@ -408,7 +401,8 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t py-6 text-center text-sm text-muted-foreground">© Rise Academy · राइज़ एकेडमी · Gurugram</footer>
+      <Footer />
+      <ContactBar afterHero />
     </>
   );
 }

@@ -1,14 +1,53 @@
+import { COURSES } from "./courses.ts";
+
 // A file in public/, under the GitHub Pages base path ("/rise-academy"; empty locally).
 export const asset = (file: string) => `${process.env.BASE_PATH}/${file}`;
 
-// Public address of the site (canonical URL, share previews, structured data). Change here for a custom domain.
+// Public address of the site (canonical URL, share previews, structured data, sitemap). Change here for a custom domain.
 export const SITE_URL = "https://jatin3010.github.io/rise-academy/";
+// The picture shown when a page is shared on WhatsApp, Facebook and so on (public/og.jpg).
+export const OG_IMAGE = { url: "og.jpg", width: 1200, height: 630, alt: "Rise Academy courses banner with phone number and address" };
 export const PHONE = "+917042481547";
 export const PHONE_DISPLAY = "070424 81547";
 export const WHATSAPP = "https://wa.me/917042481547";
+export const ADDRESS = "A-117, Bajghera Rd, New Palam Vihar, Block B, Chowk, Sector 110, Gurugram, Haryana 122017";
+export const MAPS_QUERY = "Rise+Academy+New+Palam+Vihar+Gurugram";
 // Google rating; update both when the Google listing changes.
 export const RATING = "4.9";
 export const REVIEW_COUNT = 1001;
+// The academy's UPI ID for fees (like "riseacademy@okaxis"). While empty, fee reminders don't mention UPI.
+export const UPI_ID = "";
+
+// Real Google reviews only, word for word with the reviewer's name as shown on Google; `course` is the course page
+// (lib/courses.ts) it also appears on.
+export const REVIEWS = [
+  {
+    name: "Shashwat Savarn",
+    course: "school-tuition",
+    text: "Rise Academy in New Palam Vihar provides an excellent learning environment with dedicated and approachable faculty. The teachers focus on building strong core concepts and ensure no student is left behind during doubt-clearing sessions.",
+  },
+  {
+    name: "Vinit Rana",
+    course: "spoken-english",
+    text: "Best spoken English coaching center in Gurgaon. No doubt guys, this is the best place for improvement of overall English and personality development. And Ravil sir is definitely the best mentor of my life.",
+  },
+  {
+    name: "Sanjay Vashist",
+    course: "spoken-english",
+    text: "I joined the academy to improve my English speaking and communication skills, and I have seen a noticeable improvement in my confidence and fluency.",
+  },
+];
+
+// Only facts from the Google listing and the academy's banners; no fees or batch times, which we don't know yet.
+// The home page shows them all; each course page picks the ones that fit.
+export const FAQ = {
+  courses: ["What courses does Rise Academy offer?", COURSES.map(({ title, items }) => `${title}: ${items.join(", ")}`).join(". ") + "."],
+  classes: ["Which school classes do you teach?", "All classes from 1st to 12th, in three wings: Junior (Classes 1–5), Middle (Classes 6–8) and Senior (Classes 9–12)."],
+  where: ["Where is Rise Academy in Gurugram?", `${ADDRESS}. Google Maps plus code: G25G+V9 Gurugram.`],
+  timings: ["What are the timings?", `The academy is open until 10 PM. Call ${PHONE_DISPLAY} to ask about batch timings.`],
+  ielts: ["Do you coach for IELTS and PTE?", "Yes. IELTS and PTE preparation is part of the Spoken English & Personal Growth programme."],
+  join: ["How do I join?", `Call ${PHONE_DISPLAY} or send a WhatsApp message to the same number.`],
+} satisfies Record<string, [string, string]>;
 
 // Video reviews in public/reviews/: review-N.mp4 (compressed from the originals), review-N.webp (a frame used as its
 // cover) and review-N.vtt (English captions; review 3 is spoken in Hindi, so its captions are a translation). Shown in "What students and parents say", in this order.

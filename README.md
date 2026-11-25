@@ -21,9 +21,20 @@ Every push to `main` runs [.github/workflows/deploy.yml](.github/workflows/deplo
 publish to GitHub Pages. The CRM needs two repository variables, `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`
 (public by design); setting up the database and admin logins is in [supabase/README.md](supabase/README.md).
 
+Optional repository variables (GitHub → Settings → Secrets and variables → Actions → Variables), all public:
+
+- `GA_MEASUREMENT_ID` — Google Analytics 4 (`G-…`). Counts visits, and Call / WhatsApp / call-back taps as leads.
+- `GOOGLE_SITE_VERIFICATION` — the code from Search Console's "HTML tag" ownership check.
+
+[keep-alive.yml](.github/workflows/keep-alive.yml) pings the database twice a week so the free Supabase project never pauses.
+
+**Own domain:** set `SITE_URL` in `lib/site.ts`, add the domain in GitHub → Settings → Pages → Custom domain, point
+the domain's DNS at GitHub Pages, and add it to Search Console. The base path then drops to `/` by itself.
+
 ## Where things are
 
-- `app/page.tsx`, `app/hero.tsx` — the landing page; `lib/site.ts` — phone, rating, site URL, class videos (YouTube) and review videos (`public/reviews/`).
+- `app/page.tsx`, `app/hero.tsx` — the home page; `lib/site.ts` — phone, address, rating, reviews, FAQ, UPI ID, Instagram, class videos (YouTube) and review videos (`public/reviews/`).
+- `app/(pages)/` — the course pages (`/courses/<slug>/`, one per group in `lib/courses.ts`) and the privacy policy.
 - `app/admin/` — the CRM screens; `lib/fees.ts`, `lib/import.ts`, `lib/report.ts` — its rules, with tests next to them.
 - `lib/courses.ts` — the course list, shared by the site and the CRM.
 - `supabase/schema.sql` — tables and access rules (safe to run again).

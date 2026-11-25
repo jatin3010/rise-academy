@@ -34,6 +34,9 @@ jobs:
           # Public Supabase settings for the /admin CRM, from the repo's Actions variables.
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          # Optional, both public: Google Analytics 4 measurement ID (G-…) and Search Console's HTML-tag code.
+          NEXT_PUBLIC_GA_ID: ${{ vars.GA_MEASUREMENT_ID }}
+          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.GOOGLE_SITE_VERIFICATION }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: out

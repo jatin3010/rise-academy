@@ -22,6 +22,9 @@ The CRM lives at `/admin` on the website. Student data is stored in Supabase, be
    NEXT_PUBLIC_SUPABASE_KEY=...
    ```
 
+**After an update to `schema.sql`** (for example the website's call-back requests, added November 2026), paste the
+whole file into **SQL Editor** and press **Run** again. It only adds what is missing and never deletes data.
+
 These two values are meant to be public. Only logins listed in step 4 can read or change student data. Never share the
 **secret** key or the database password.
 
