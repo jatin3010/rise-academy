@@ -77,10 +77,10 @@ export default function Hero() {
 
         <div className="mt-auto flex flex-col gap-6 px-5 pb-8 sm:gap-8 sm:px-8 sm:pb-12 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:pb-16">
           <div className="max-w-xl">
-            <h1 className={`text-3xl font-semibold leading-[1.1] tracking-tight text-[#010101] sm:text-4xl lg:text-[3.5rem] lg:text-white ${ENTER} delay-150`}>
+            <h1 className={`text-3xl font-semibold leading-[1.1] tracking-tight text-[#010101] font-stretch-semi-condensed sm:text-4xl lg:text-[3.5rem] lg:text-white ${ENTER} delay-150`}>
               {/* Says who and where in the main heading, for search and AI answers; the tagline stays the visual headline. */}
-              <span className="mb-3 block text-sm font-medium tracking-normal opacity-70">
-                Rise Academy · Coaching in Sector 110, Gurugram
+              <span className="mb-3 block text-sm font-medium tracking-normal font-stretch-normal opacity-70">
+                Rise Academy, coaching in Sector 110, Gurugram
               </span>{" "}
               Strong foundations today. Successful futures tomorrow.
             </h1>
@@ -106,11 +106,12 @@ export default function Hero() {
           </div>
 
           <div className="flex w-full flex-col gap-4 sm:flex-row lg:w-auto lg:gap-5">
-            <div data-hero className={`flex flex-col justify-between sm:w-64 ${GLASS}`}>
+            {/* On laptops the cards sit over the bright mist of the video: darker glass keeps their small white text
+                readable (it measured 2.18:1 on white/10 glass; 4.5:1 is the minimum). */}
+            <div data-hero className={`flex flex-col justify-between sm:w-64 lg:bg-black/45 ${GLASS}`}>
               <p
                 data-count={REVIEW_COUNT}
-                style={{ fontFamily: "var(--font-silkscreen), cursive" }}
-                className="text-3xl font-normal tracking-tight text-[#010101] sm:text-4xl lg:text-white"
+                className="text-3xl font-semibold tracking-tight tabular-nums text-[#010101] font-stretch-semi-condensed sm:text-4xl lg:text-white"
               >
                 {REVIEW_COUNT.toLocaleString("en-IN")}+
               </p>
@@ -119,7 +120,7 @@ export default function Hero() {
               </p>
             </div>
 
-            <figure data-hero className={`sm:w-64 ${GLASS}`}>
+            <figure data-hero className={`sm:w-64 lg:bg-black/45 ${GLASS}`}>
               <div className="mb-3 flex items-center gap-2 sm:mb-4">
                 <span className="grid h-6 w-6 place-items-center rounded-md bg-black text-xs font-bold text-white" aria-hidden>
                   G

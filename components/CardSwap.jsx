@@ -18,7 +18,7 @@ const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : us
 
 const THEMES = {
   dark: {
-    '--swap-tile': 'linear-gradient(180deg, #2b2b2b 0%, #101010 100%)',
+    '--swap-tile': 'linear-gradient(180deg, #1c2342 0%, #10152b 100%)', // the site's night indigo (app/globals.css)
     '--swap-tile-edge': 'rgba(255, 255, 255, 0.08)',
     '--swap-tile-highlight': 'rgba(255, 255, 255, 0.12)',
     '--swap-shadow': '0 30px 60px -24px rgba(0, 0, 0, 0.8), 0 10px 24px -12px rgba(0, 0, 0, 0.55)',

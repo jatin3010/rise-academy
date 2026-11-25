@@ -1,9 +1,12 @@
-// A section's small label above its heading, used on every public page.
-export default function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
+// A section heading, slightly narrowed (Anek's width axis) so it reads as a heading rather than large body text.
+// The small gold label above it is only for facts the heading doesn't say (a rating, a handle, who someone is).
+export default function SectionTitle({ eyebrow, title }: { eyebrow?: string; title: string }) {
   return (
     <>
-      <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{eyebrow}</p>
-      <h2 className="mt-3 mb-8 text-3xl font-semibold leading-[1.1] tracking-tight sm:text-4xl">{title}</h2>
+      {eyebrow && <p className="text-sm font-medium text-gold">{eyebrow}</p>}
+      <h2 className="mt-2 mb-8 text-3xl font-semibold leading-[1.1] tracking-tight font-stretch-semi-condensed sm:text-4xl">
+        {title}
+      </h2>
     </>
   );
 }

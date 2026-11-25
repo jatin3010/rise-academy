@@ -47,7 +47,7 @@ export default async function CoursePage({ params }: PageProps<"/courses/[slug]"
         <Link href="/" className="hover:text-white">Home</Link> / <Link href="/#courses" className="hover:text-white">Courses</Link> /{" "}
         {course.title}
       </nav>
-      <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl">{course.heading}</h1>
+      <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-[1.1] tracking-tight font-stretch-semi-condensed sm:text-5xl">{course.heading}</h1>
       <p className="mt-5 max-w-2xl text-lg leading-relaxed text-white/80">
         {course.text} At Rise Academy, A-117 Bajghera Road, New Palam Vihar, Sector 110, Gurugram.
       </p>
@@ -67,7 +67,7 @@ export default async function CoursePage({ params }: PageProps<"/courses/[slug]"
 
       {videos.length > 0 && (
         <section className="mt-16">
-          <SectionTitle eyebrow="See how we teach" title="Classes with Ravil Sir" />
+          <SectionTitle title="Classes with Ravil Sir" />
           <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {videos.map(({ id, title }) => (
               <li key={id} className="rounded-2xl bg-white/10 p-1.5 backdrop-blur-lg">
@@ -100,7 +100,7 @@ export default async function CoursePage({ params }: PageProps<"/courses/[slug]"
       )}
 
       <section className="mt-16">
-        <SectionTitle eyebrow="Asked by parents and students" title="Common questions" />
+        <SectionTitle title="Common questions" />
         <dl className="grid max-w-3xl gap-3">
           {QUESTIONS[course.slug].map((key) => (
             <div key={key} className={GLASS}>
@@ -112,7 +112,7 @@ export default async function CoursePage({ params }: PageProps<"/courses/[slug]"
       </section>
 
       <section className="mt-16">
-        <SectionTitle eyebrow="Visit or call us" title="Rise Academy, Sector 110" />
+        <SectionTitle title="Visit or call us" />
         <p className="max-w-2xl text-lg leading-relaxed">{ADDRESS}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <a href={ask} target="_blank" rel="noopener" className={CTA_BUTTON}>WhatsApp us</a>
@@ -123,7 +123,7 @@ export default async function CoursePage({ params }: PageProps<"/courses/[slug]"
       </section>
 
       <section className="mt-16">
-        <SectionTitle eyebrow="Also at Rise Academy" title="Other courses" />
+        <SectionTitle title="Other courses at Rise Academy" />
         <ul className="flex flex-wrap gap-3">
           {COURSES.filter((c) => c.slug !== course.slug).map((c) => (
             <li key={c.slug}>

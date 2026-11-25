@@ -26,6 +26,18 @@
   padding-inline: 0;
 }
 
+/* Rise Academy's colours, taken from its logo (a figure rising over an open book in a burst of sunrise): night indigo
+   from the logo's blue, saffron and gold from its rays. Saffron marks actions; saffron-strong is the shade that keeps
+   white button text above 4.5:1 contrast. Gold marks ratings and small labels. */
+@theme {
+  --color-night: #0c1124;
+  --color-surface: #151b33;
+  --color-saffron: #e4511b;
+  --color-saffron-strong: #c44617;
+  --color-saffron-deep: #a63a12;
+  --color-gold: #ebae33;
+}
+
 /* Bars that grow from the left (CRM course counts). Used as motion-safe:animate-grow-x. */
 @theme {
   --animate-grow-x: grow-x 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -66,10 +78,10 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Hero look everywhere: near-black page, white text, white/10 glass surfaces */
+/* Night-indigo page, white text, white/10 glass surfaces */
 :root {
   color-scheme: dark;
-  --background: oklch(0.145 0 0);
+  --background: #0c1124;
   --foreground: oklch(0.985 0 0);
   --card: oklch(1 0 0 / 10%);
   --card-foreground: oklch(0.985 0 0);

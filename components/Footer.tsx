@@ -17,7 +17,7 @@ export default function Footer() {
           Privacy policy
         </Link>
       </nav>
-      <p className="mt-4">© Rise Academy · राइज़ एकेडमी · Sector 110, Gurugram</p>
+      <p className="mt-4">© Rise Academy (राइज़ एकेडमी), Sector 110, Gurugram</p>
     </footer>
   );
 }

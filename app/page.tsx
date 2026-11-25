@@ -99,24 +99,21 @@ export default function Home() {
 
         <section id="courses" className="py-14 sm:py-20">
           <div data-reveal className="px-5 sm:px-8 lg:px-12">
-            <SectionTitle eyebrow="The best coaching in Gurugram" title="Our courses" />
+            <SectionTitle title="Our courses" />
             <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">{about}</p>
             {/* React Bits ScrollStack, moving with the page: each course card pins near the top and the next slides
                 over it. Its own wheel smoothing is off; Lenis (components/SmoothScroll.tsx) already smooths the page.
                 The `!` classes win over the component's fixed card height and padding, so cards fit their text. */}
             <ScrollStack useWindowScroll smoothScroll={false} className="courses-stack" itemDistance={64} holdDistance={120}>
-              {courses.map(({ icon: Icon, slug, title, text, items }, i) => (
+              {courses.map(({ icon: Icon, slug, title, text, items }) => (
                 <ScrollStackItem
                   key={slug}
                   // Minimum heights = the tallest card at each size, so the stacked edges line up evenly.
-                  itemClassName="h-auto! min-h-[28rem]! p-6! sm:p-10! md:grid md:min-h-[18.5rem]! md:grid-cols-2 md:gap-10 lg:min-h-56!"
+                  itemClassName="h-auto! min-h-[28rem]! bg-surface! p-6! sm:p-10! md:grid md:min-h-[18.5rem]! md:grid-cols-2 md:gap-10 lg:min-h-57!"
                 >
                   <div>
-                    <div className="flex items-center gap-3 text-white/55">
-                      <span className="text-sm font-semibold tabular-nums">{String(i + 1).padStart(2, "0")}</span>
-                      <Icon className="size-6" aria-hidden />
-                    </div>
-                    <h3 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h3>
+                    <Icon className="size-7 text-gold" aria-hidden />
+                    <h3 className="mt-5 text-2xl font-semibold tracking-tight font-stretch-semi-condensed sm:text-3xl">{title}</h3>
                     <p className="mt-3 max-w-md leading-relaxed text-white/70">{text}</p>
                   </div>
                   <div className="mt-6 flex flex-col md:mt-0">
@@ -144,7 +141,7 @@ export default function Home() {
 
         <section id="why" className="py-14 sm:py-20">
           <div data-reveal className="px-5 sm:px-8 lg:px-12">
-            <SectionTitle eyebrow="Why students choose us" title="Why Rise Academy" />
+            <SectionTitle title="Why Rise Academy" />
             <ul data-reveal className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {reasons.map(([title, text]) => (
                 <li key={title} className={GLASS}>
@@ -186,7 +183,7 @@ export default function Home() {
         {VIDEOS.length > 0 && (
           <section id="classes" className="py-14 sm:py-20">
             <div data-reveal className="px-5 sm:px-8 lg:px-12">
-              <SectionTitle eyebrow="See how we teach" title="Inside our classes" />
+              <SectionTitle title="Inside our classes" />
               <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">
                 Real classes with Ravil Sir: spoken English, grammar, and preparation for SSC CGL, CUET and job interviews.
               </p>
@@ -257,7 +254,7 @@ export default function Home() {
                 spread far apart across a wide screen. */}
             <div data-reveal className="items-center gap-10 px-5 sm:px-8 lg:px-12 2xl:grid 2xl:grid-cols-[1fr_auto]">
               <div>
-                <SectionTitle eyebrow="In their own words" title="What students and parents say" />
+                <SectionTitle title="What students and parents say" />
                 <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">
                   Rise Academy students and parents talk about their experience, filmed at the academy.
                 </p>
@@ -366,25 +363,25 @@ export default function Home() {
 
         <section id="faq" className="py-14 sm:py-20">
           <div data-reveal className="px-5 sm:px-8 lg:px-12">
-            <SectionTitle eyebrow="Asked by parents and students" title="Common questions" />
+            <SectionTitle title="Common questions" />
             <FaqChat faqs={Object.values(FAQ)} logo={logo} whatsapp={WHATSAPP} />
           </div>
         </section>
 
         <section id="contact" className="py-14 sm:py-20">
           <div data-reveal className="px-5 sm:px-8 lg:px-12">
-            <SectionTitle eyebrow="Visit or call us" title="Contact" />
+            <SectionTitle title="Visit or call us" />
             <div data-reveal className="grid items-start gap-5 md:grid-cols-2">
               <div className={GLASS}>
                 <dl className="grid gap-5">
                   {[
                     ["Address", ADDRESS],
                     ["Phone", <a key="p" href={`tel:${PHONE}`}>{PHONE_DISPLAY}</a>],
-                    ["Hours", "Closes 10 PM · call for batch timings"],
+                    ["Hours", "Open until 10 PM. Call for batch timings."],
                     ["Plus code", "G25G+V9 Gurugram"],
                   ].map(([label, value]) => (
                     <div key={label as string}>
-                      <dt className="text-xs uppercase tracking-widest text-muted-foreground">{label}</dt>
+                      <dt className="text-sm text-muted-foreground">{label}</dt>
                       <dd className="text-lg">{value}</dd>
                     </div>
                   ))}

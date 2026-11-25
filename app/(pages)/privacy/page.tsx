@@ -17,7 +17,7 @@ export default function PrivacyPage() {
   const p = "mt-3 leading-relaxed text-white/80";
   return (
     <article className="max-w-3xl">
-      <h1 className="text-4xl font-semibold tracking-tight">Privacy policy</h1>
+      <h1 className="text-4xl font-semibold tracking-tight font-stretch-semi-condensed">Privacy policy</h1>
       <p className="mt-3 text-sm text-muted-foreground">Last updated {UPDATED}</p>
       <p className={p}>
         Rise Academy, {ADDRESS}, runs this website. This page explains what we keep about you and why. For any question,
