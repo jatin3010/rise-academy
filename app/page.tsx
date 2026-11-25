@@ -9,12 +9,12 @@ import ContactBar from "@/components/ContactBar";
 import FaqChat from "@/components/FaqChat";
 import Footer from "@/components/Footer";
 import Motion from "@/components/Motion";
+import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import SectionTitle from "@/components/SectionTitle";
 import SpotlightCard from "@/components/SpotlightCard";
 import Stars from "@/components/Stars";
 import VideoReviews from "@/components/VideoReviews";
 import YouTube from "@/components/YouTube";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { COURSES } from "@/lib/courses";
 import {
   ADDRESS,
@@ -33,7 +33,7 @@ import {
   WHATSAPP,
   YOUTUBE,
 } from "@/lib/site";
-import { CTA_BUTTON, GLASS, GLASS_BUTTON, GLASS_CARD } from "@/lib/styles";
+import { CTA_BUTTON, GLASS, GLASS_BUTTON } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 import Hero from "./hero";
 import logo from "./logo.jpeg";
@@ -101,30 +101,44 @@ export default function Home() {
           <div data-reveal className="px-5 sm:px-8 lg:px-12">
             <SectionTitle eyebrow="The best coaching in Gurugram" title="Our courses" />
             <p className="mb-8 max-w-3xl leading-relaxed text-muted-foreground">{about}</p>
-            <div data-reveal className="grid gap-5 md:grid-cols-3">
-              {courses.map(({ icon: Icon, slug, title, text, items }) => (
-                <Card key={title} className={`p-2 ${GLASS_CARD}`}>
-                  <CardHeader>
-                    <Icon className="size-8 text-white/80" aria-hidden />
-                    <CardTitle className="mt-3 text-xl font-semibold tracking-tight">{title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex grow flex-col text-base text-muted-foreground">
-                    <p>{text}</p>
-                    <ul className="mt-4 mb-5 flex flex-wrap gap-2">
+            {/* React Bits ScrollStack, moving with the page: each course card pins near the top and the next slides
+                over it. Its own wheel smoothing is off; Lenis (components/SmoothScroll.tsx) already smooths the page.
+                The `!` classes win over the component's fixed card height and padding, so cards fit their text. */}
+            <ScrollStack useWindowScroll smoothScroll={false} className="courses-stack" itemDistance={64} holdDistance={120}>
+              {courses.map(({ icon: Icon, slug, title, text, items }, i) => (
+                <ScrollStackItem
+                  key={slug}
+                  // Minimum heights = the tallest card at each size, so the stacked edges line up evenly.
+                  itemClassName="h-auto! min-h-[28rem]! p-6! sm:p-10! md:grid md:min-h-[18.5rem]! md:grid-cols-2 md:gap-10 lg:min-h-56!"
+                >
+                  <div>
+                    <div className="flex items-center gap-3 text-white/55">
+                      <span className="text-sm font-semibold tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                      <Icon className="size-6" aria-hidden />
+                    </div>
+                    <h3 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h3>
+                    <p className="mt-3 max-w-md leading-relaxed text-white/70">{text}</p>
+                  </div>
+                  <div className="mt-6 flex flex-col md:mt-0">
+                    <ul className="flex flex-wrap gap-2" aria-label={`${title} courses`}>
                       {items.map((item) => (
                         <li key={item}>
-                          <Badge variant="secondary">{item}</Badge>
+                          <Badge variant="secondary" className="h-8 px-3 text-sm">{item}</Badge>
                         </li>
                       ))}
                     </ul>
                     {/* prefetch={false}: see components/Footer.tsx */}
-                    <Link href={`/courses/${slug}/`} prefetch={false} className="mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-white hover:underline">
+                    <Link
+                      href={`/courses/${slug}/`}
+                      prefetch={false}
+                      className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium hover:underline md:mt-auto md:pt-6"
+                    >
                       More about {title} <ArrowRight className="size-4" aria-hidden />
                     </Link>
-                  </CardContent>
-                </Card>
+                  </div>
+                </ScrollStackItem>
               ))}
-            </div>
+            </ScrollStack>
           </div>
         </section>
 

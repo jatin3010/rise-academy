@@ -20,6 +20,12 @@
   }
 }
 
+/* The course stack (app/page.tsx) lines up with its section's edges, without ScrollStack's own 6% side padding.
+   Plain CSS, outside Tailwind's layers, like the component's own rule; two class names make it the stronger one. */
+.courses-stack .scroll-stack__inner {
+  padding-inline: 0;
+}
+
 /* Bars that grow from the left (CRM course counts). Used as motion-safe:animate-grow-x. */
 @theme {
   --animate-grow-x: grow-x 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
